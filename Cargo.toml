@@ -1,0 +1,8 @@
+[package]
+name = "egui_code_editor"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+egui = "0.22.0"
