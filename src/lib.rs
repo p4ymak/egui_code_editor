@@ -11,7 +11,7 @@ pub use themes::ColorTheme;
 #[cfg_attr(feature = "serde", serde(default))]
 
 pub struct CodeEditor {
-    height: usize,
+    rows: usize,
     theme: ColorTheme,
     fontsize: f32,
     numlines: bool,
@@ -29,7 +29,7 @@ impl Hash for CodeEditor {
 impl Default for CodeEditor {
     fn default() -> CodeEditor {
         CodeEditor {
-            height: 1,
+            rows: 1,
             theme: ColorTheme::GRUVBOX,
             fontsize: 10.0,
             numlines: true,
@@ -39,8 +39,8 @@ impl Default for CodeEditor {
 }
 impl CodeEditor {
     #[allow(clippy::new_ret_no_self)]
-    pub fn with_height(self, height: usize) -> CodeEditor {
-        CodeEditor { height, ..self }
+    pub fn with_rows(self, rows: usize) -> CodeEditor {
+        CodeEditor { rows, ..self }
     }
     pub fn with_theme(self, theme: ColorTheme) -> CodeEditor {
         CodeEditor { theme, ..self }
@@ -72,7 +72,7 @@ impl CodeEditor {
         } else {
             text.lines().count()
         }
-        .max(self.height);
+        .max(self.rows);
         let max_indent = total.to_string().len();
         let mut counter = (1..=total)
             .map(|i| {
@@ -97,13 +97,12 @@ impl CodeEditor {
             );
             ui.fonts(|f| f.layout_job(layout_job))
         };
-        ui.style_mut().visuals.extreme_bg_color = self.theme.bg();
         ui.add(
             egui::TextEdit::multiline(&mut counter)
                 .font(egui::TextStyle::Monospace)
                 .interactive(false)
                 .frame(false)
-                .desired_rows(self.height)
+                .desired_rows(self.rows)
                 .desired_width(width)
                 .layouter(&mut layouter),
         );
@@ -111,6 +110,7 @@ impl CodeEditor {
 
     pub fn draw(&mut self, ui: &mut egui::Ui, text: &mut String) {
         egui::ScrollArea::vertical().show(ui, |v| {
+            v.set_style(self.theme.style());
             v.style_mut().override_font_id = Some(egui::FontId::monospace(self.fontsize));
             v.horizontal_top(|h| {
                 if self.numlines {
@@ -121,11 +121,11 @@ impl CodeEditor {
                         let layout_job = highlight(ui.ctx(), self, string);
                         ui.fonts(|f| f.layout_job(layout_job))
                     };
-                    ui.style_mut().visuals.extreme_bg_color = self.theme.bg();
                     ui.add(
                         egui::TextEdit::multiline(text)
                             .lock_focus(true)
-                            .desired_rows(self.height)
+                            .desired_rows(self.rows)
+                            .frame(true)
                             .desired_width(f32::MAX)
                             .layouter(&mut layouter),
                     );

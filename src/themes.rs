@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use super::syntax::TokenType;
-use egui::Color32;
+use egui::{Color32, Style};
 
 pub const ERROR_COLOR: Color32 = Color32::from_rgb(255, 0, 255);
 
@@ -34,6 +34,15 @@ pub struct ColorTheme {
 impl ColorTheme {
     pub fn bg(&self) -> Color32 {
         color_from_hex(self.bg).unwrap_or(ERROR_COLOR)
+    }
+    pub fn style(&self) -> Style {
+        let mut style = Style::default();
+
+        style.visuals.widgets.noninteractive.bg_fill = self.bg();
+        style.visuals.window_fill = self.bg();
+        style.visuals.selection.stroke.color = self.type_color(TokenType::Literal);
+        style.visuals.extreme_bg_color = self.bg();
+        style
     }
     pub const fn type_color_str(&self, ty: TokenType) -> &'static str {
         match ty {
@@ -160,13 +169,13 @@ impl ColorTheme {
     pub const AYU: ColorTheme = ColorTheme {
         dark: false,
         bg: "#fafafa",
-        comments: "#6c7680",    // blue
-        functions: "#86b300",   // red
-        keywords: "#ff3333",    // green
-        literals: "#399ee6",    // orange
-        numerics: "#a37acc",    // yellow
-        punctuation: "#ff9940", // pinky
-        strs: "#f07171",        // gray
-        types: "#f2ae49",       // transparent
+        comments: "#828c9a",    // gray
+        functions: "#ffaa33",   // yellow
+        keywords: "#fa8d3e",    // orange
+        literals: "#5c6166",    // foreground
+        numerics: "#a37acc",    // magenta
+        punctuation: "#5c6166", // foreground
+        strs: "#86b300",        // green
+        types: "#399ee6",       // blue
     };
 }
