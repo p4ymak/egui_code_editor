@@ -14,6 +14,7 @@ pub struct CodeEditor {
     height: usize,
     theme: ColorTheme,
     fontsize: f32,
+    numlines: bool,
     syntax: Syntax,
 }
 
@@ -31,6 +32,7 @@ impl Default for CodeEditor {
             height: 1,
             theme: ColorTheme::GRUVBOX,
             fontsize: 10.0,
+            numlines: true,
             syntax: Syntax::sql(),
         }
     }
@@ -51,6 +53,9 @@ impl CodeEditor {
             fontsize: egui::TextStyle::Monospace.resolve(ui.style()).size,
             ..self
         }
+    }
+    pub fn with_numlines(self, numlines: bool) -> CodeEditor {
+        CodeEditor { numlines, ..self }
     }
     pub fn with_syntax(self, syntax: Syntax) -> CodeEditor {
         CodeEditor { syntax, ..self }
@@ -108,7 +113,9 @@ impl CodeEditor {
         egui::ScrollArea::vertical().show(ui, |v| {
             v.style_mut().override_font_id = Some(egui::FontId::monospace(self.fontsize));
             v.horizontal_top(|h| {
-                self.numlines_view(h, text);
+                if self.numlines {
+                    self.numlines_view(h, text);
+                }
                 egui::ScrollArea::horizontal().show(h, |ui| {
                     let mut layouter = |ui: &egui::Ui, string: &str, _wrap_width: f32| {
                         let layout_job = highlight(ui.ctx(), self, string);
