@@ -68,7 +68,10 @@ impl Highlighter {
                     .find(|c: char| !(c.is_ascii_alphanumeric() || c == '_'))
                     .map_or_else(|| text.len(), |i| i + 1);
                 let word = &text[..end];
-                let tt = if editor.syntax.is_keyword(word) {
+
+                let tt = if let Some('(') = text.chars().nth(end) {
+                    TokenType::Function
+                } else if editor.syntax.is_keyword(word) {
                     TokenType::Keyword
                 } else if editor.syntax.is_type(word) {
                     TokenType::Type

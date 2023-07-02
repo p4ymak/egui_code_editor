@@ -66,7 +66,7 @@ impl CodeEditor {
         let color = self.theme.type_color(ty);
         egui::text::TextFormat::simple(font_id, color)
     }
-    fn numlines_view(&self, ui: &mut egui::Ui, text: &str) {
+    fn numlines_show(&self, ui: &mut egui::Ui, text: &str) {
         let total = if text.ends_with('\n') || text.is_empty() {
             text.lines().count() + 1
         } else {
@@ -108,13 +108,14 @@ impl CodeEditor {
         );
     }
 
-    pub fn draw(&mut self, ui: &mut egui::Ui, text: &mut String) {
+    pub fn show(&mut self, ui: &mut egui::Ui, text: &mut String) {
         egui::ScrollArea::vertical().show(ui, |v| {
             v.set_style(self.theme.style());
             v.style_mut().override_font_id = Some(egui::FontId::monospace(self.fontsize));
+            v.style_mut().visuals.text_cursor_width = self.fontsize * 0.1;
             v.horizontal_top(|h| {
                 if self.numlines {
-                    self.numlines_view(h, text);
+                    self.numlines_show(h, text);
                 }
                 egui::ScrollArea::horizontal().show(h, |ui| {
                     let mut layouter = |ui: &egui::Ui, string: &str, _wrap_width: f32| {
