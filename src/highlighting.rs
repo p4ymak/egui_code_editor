@@ -73,6 +73,8 @@ impl Highlighter {
                     TokenType::Keyword
                 } else if editor.syntax.is_type(word) {
                     TokenType::Type
+                } else if editor.syntax.is_special(word) {
+                    TokenType::Special
                 } else if let Some('(') = text.chars().nth(end) {
                     TokenType::Function
                 } else {

@@ -14,6 +14,7 @@ pub enum TokenType {
     Literal,
     Numeric,
     Punctuation,
+    Special,
     Str,
     Type,
     Whitespace,
