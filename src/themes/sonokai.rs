@@ -16,5 +16,6 @@ impl ColorTheme {
         punctuation: "#7f8490", // gray
         strs: "#e7c664",        // yellow
         types: "#399ee6",       // blue
+        special: "#f39660",     // orange
     };
 }

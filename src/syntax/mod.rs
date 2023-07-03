@@ -26,6 +26,7 @@ pub struct Syntax {
     comment: &'static str,
     keywords: HashSet<&'static str>,
     types: HashSet<&'static str>,
+    special: HashSet<&'static str>,
 }
 impl Hash for Syntax {
     fn hash<H: Hasher>(&self, state: &mut H) {
@@ -50,6 +51,13 @@ impl Syntax {
             self.types.contains(word.to_ascii_uppercase().as_str())
         }
     }
+    pub fn is_special(&self, word: &str) -> bool {
+        if self.case_sensitive {
+            self.special.contains(&word)
+        } else {
+            self.special.contains(word.to_ascii_uppercase().as_str())
+        }
+    }
 }
 
 impl Syntax {
@@ -60,6 +68,7 @@ impl Syntax {
             comment,
             keywords: HashSet::new(),
             types: HashSet::new(),
+            special: HashSet::new(),
         }
     }
 }

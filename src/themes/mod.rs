@@ -35,6 +35,7 @@ pub struct ColorTheme {
     pub punctuation: &'static str,
     pub strs: &'static str,
     pub types: &'static str,
+    pub special: &'static str,
 }
 
 impl ColorTheme {
@@ -104,6 +105,7 @@ impl ColorTheme {
             types: fg,
             strs: fg,
             comments: fg,
+            special: fg,
         }
     }
 }

@@ -16,5 +16,6 @@ impl ColorTheme {
         punctuation: "#5c6166", // foreground
         strs: "#86b300",        // green
         types: "#399ee6",       // blue
+        special: "#fa8d3e",     // orange
     };
 }

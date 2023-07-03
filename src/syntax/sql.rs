@@ -75,7 +75,6 @@ impl Syntax {
                 "BIGINT",
                 "REAL",
                 "DOUBLEPRECISION",
-                "NUMERIC",
                 "VARCHAR",
                 "CHAR",
                 "TEXT",
@@ -84,7 +83,8 @@ impl Syntax {
                 "UUID",
                 "BYTEA",
                 "LOB",
-                "XML",
+                "BLOB",
+                "CLOB",
                 "BIGINT",
                 "NUMERIC",
                 "BIT",
@@ -92,6 +92,12 @@ impl Syntax {
                 "DECIMAL",
                 "SMALLMONEY",
                 "INT",
+                "INT4",
+                "INT8",
+                "INT16",
+                "INT32",
+                "INT64",
+                "INT128",
                 "TINYINT",
                 "MONEY",
                 "FLOAT",
@@ -120,6 +126,7 @@ impl Syntax {
                 "SET",
                 "DATABASE",
             ]),
+            special: HashSet::from(["PUBLIC", "ID"]),
         }
     }
 }

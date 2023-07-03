@@ -14,5 +14,6 @@ impl ColorTheme {
         punctuation: "#24292f", // fg.default
         strs: "#0a3069",        // scale.blue.8
         types: "#953800",       // scale.orange.6
+        special: "#a475f9",     // scale.purple.4
     };
 }
