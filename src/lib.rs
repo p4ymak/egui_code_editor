@@ -10,6 +10,7 @@ pub use themes::ColorTheme;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct CodeEditor {
+    id: String,
     theme: ColorTheme,
     syntax: Syntax,
     numlines: bool,
@@ -29,6 +30,7 @@ impl Hash for CodeEditor {
 impl Default for CodeEditor {
     fn default() -> CodeEditor {
         CodeEditor {
+            id: String::from("Code Editor"),
             theme: ColorTheme::GRUVBOX,
             syntax: Syntax::sql(),
             numlines: true,
@@ -39,6 +41,13 @@ impl Default for CodeEditor {
 }
 
 impl CodeEditor {
+    #[must_use]
+    pub fn id_source(self, id_source: impl Into<String>) -> Self {
+        CodeEditor {
+            id: id_source.into(),
+            ..self
+        }
+    }
     #[must_use]
     pub fn with_rows(self, rows: usize) -> Self {
         CodeEditor { rows, ..self }
@@ -107,6 +116,7 @@ impl CodeEditor {
         };
         ui.add(
             egui::TextEdit::multiline(&mut counter)
+                .id_source(format!("{}_numlines", self.id))
                 .font(egui::TextStyle::Monospace)
                 .interactive(false)
                 .frame(false)
@@ -116,30 +126,38 @@ impl CodeEditor {
         );
     }
 
-    pub fn show(&mut self, ui: &mut egui::Ui, text: &mut String) {
-        egui::ScrollArea::vertical().show(ui, |v| {
-            v.set_style(self.theme.style());
-            v.style_mut().override_font_id = Some(egui::FontId::monospace(self.fontsize));
-            v.style_mut().visuals.text_cursor_width = self.fontsize * 0.1;
-            v.horizontal_top(|h| {
-                if self.numlines {
-                    self.numlines_show(h, text);
-                }
-                egui::ScrollArea::horizontal().show(h, |ui| {
-                    let mut layouter = |ui: &egui::Ui, string: &str, _wrap_width: f32| {
-                        let layout_job = highlight(ui.ctx(), self, string);
-                        ui.fonts(|f| f.layout_job(layout_job))
-                    };
-                    ui.add(
-                        egui::TextEdit::multiline(text)
-                            .lock_focus(true)
-                            .desired_rows(self.rows)
-                            .frame(true)
-                            .desired_width(f32::MAX)
-                            .layouter(&mut layouter),
-                    );
+    pub fn show(&mut self, ui: &mut egui::Ui, text: &mut String) -> egui::Response {
+        let mut response: Option<egui::Response> = None;
+        egui::ScrollArea::vertical()
+            .id_source(format!("{}_outer_scroll", self.id))
+            .show(ui, |v| {
+                v.set_style(self.theme.style());
+                v.style_mut().override_font_id = Some(egui::FontId::monospace(self.fontsize));
+                v.style_mut().visuals.text_cursor_width = self.fontsize * 0.1;
+                v.horizontal_top(|h| {
+                    if self.numlines {
+                        self.numlines_show(h, text);
+                    }
+                    egui::ScrollArea::horizontal()
+                        .id_source(format!("{}_inner_scroll", self.id))
+                        .show(h, |ui| {
+                            let mut layouter = |ui: &egui::Ui, string: &str, _wrap_width: f32| {
+                                let layout_job = highlight(ui.ctx(), self, string);
+                                ui.fonts(|f| f.layout_job(layout_job))
+                            };
+                            let resp = ui.add(
+                                egui::TextEdit::multiline(text)
+                                    .id_source(&self.id)
+                                    .lock_focus(true)
+                                    .desired_rows(self.rows)
+                                    .frame(true)
+                                    .desired_width(f32::MAX)
+                                    .layouter(&mut layouter),
+                            );
+                            response = Some(resp);
+                        });
                 });
             });
-        });
+        response.expect("response should exist at this point")
     }
 }

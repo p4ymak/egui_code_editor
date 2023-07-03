@@ -16,6 +16,38 @@ impl ColorTheme {
         punctuation: "#5c6166", // foreground
         strs: "#86b300",        // green
         types: "#399ee6",       // blue
-        special: "#fa8d3e",     // orange
+        special: "#f07171",     // red
+    };
+
+    pub const AYU_MIRAGE: ColorTheme = ColorTheme {
+        dark: true,
+        bg: "#1f2430",
+        cursor: "#cccac2",      // foreground
+        selection: "#ffad66",   // orange
+        comments: "#565b66",    // gray
+        functions: "#ffcc77",   // yellow
+        keywords: "#ffad66",    // orange
+        literals: "#cccac2",    // foreground
+        numerics: "#dfbfff",    // magenta
+        punctuation: "#cccac2", // foreground
+        strs: "#d5ff80",        // green
+        types: "#73d0ff",       // blue
+        special: "#f28779",     // red
+    };
+
+    pub const AYU_DARK: ColorTheme = ColorTheme {
+        dark: true,
+        bg: "#0f1419",
+        cursor: "#bfbdb6",      // foreground
+        selection: "#ffad66",   // orange
+        comments: "#5c6773",    // gray
+        functions: "#e6b450",   // yellow
+        keywords: "#ffad66",    // orange
+        literals: "#bfbdb6",    // foreground
+        numerics: "#dfbfff",    // magenta
+        punctuation: "#bfbdb6", // foreground
+        strs: "#aad94c",        // green
+        types: "#59c2ff",       // blue
+        special: "#f28779",     // red
     };
 }
