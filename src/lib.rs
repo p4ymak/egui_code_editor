@@ -1,11 +1,3 @@
-// #![warn(
-//     clippy::all,
-//     clippy::pedantic,
-//     clippy::cargo,
-//     clippy::restriction,
-//     clippy::nursery
-// )]
-
 mod highlighting;
 mod syntax;
 mod themes;

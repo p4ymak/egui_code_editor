@@ -10,9 +10,3 @@ keywords = ["egui", "GUI", "code", "editor", "syntax", "highlighting"]
 
 [dependencies]
 egui = "0.22.0"
-syntect = { version = "5.0.0", optional = true }
-
-[features]
-default = []
-syntect = ["dep:syntect"]
-
