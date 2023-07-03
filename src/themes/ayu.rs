@@ -6,7 +6,7 @@ impl ColorTheme {
     pub const AYU: ColorTheme = ColorTheme {
         dark: false,
         bg: "#fafafa",
-        cursor: "#d8d8d7",      // darg_gray
+        cursor: "#5c6166",      // foreground
         selection: "#fa8d3e",   // orange
         comments: "#828c9a",    // gray
         functions: "#ffaa33",   // yellow
