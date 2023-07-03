@@ -62,22 +62,23 @@ impl Highlighter {
                 job.append(&text[..end], 0.0, editor.format(TokenType::Str));
                 text = &text[end..];
             }
-            // Keyword | Type | Literal
+            // Keyword | Type | Literal | Function
             else if text.starts_with(|c: char| c.is_ascii_alphanumeric() || c == '_') {
                 let end = text[1..]
                     .find(|c: char| !(c.is_ascii_alphanumeric() || c == '_'))
                     .map_or_else(|| text.len(), |i| i + 1);
                 let word = &text[..end];
 
-                let tt = if let Some('(') = text.chars().nth(end) {
-                    TokenType::Function
-                } else if editor.syntax.is_keyword(word) {
+                let tt = if editor.syntax.is_keyword(word) {
                     TokenType::Keyword
                 } else if editor.syntax.is_type(word) {
                     TokenType::Type
+                } else if let Some('(') = text.chars().nth(end) {
+                    TokenType::Function
                 } else {
                     TokenType::Literal
                 };
+
                 job.append(word, 0.0, editor.format(tt));
                 text = &text[end..];
             }
