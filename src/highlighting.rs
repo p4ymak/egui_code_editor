@@ -28,7 +28,7 @@ impl Highlighter {
                 text = &text[end..];
             }
             // Numeric
-            else if text.starts_with(|c: char| c.is_numeric()) {
+            else if text.starts_with(char::is_numeric) {
                 let end = text[1..]
                     .find(|c: char| !c.is_numeric())
                     .map_or_else(|| text.len(), |i| i + 1);

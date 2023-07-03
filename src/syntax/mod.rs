@@ -20,7 +20,7 @@ pub enum TokenType {
     Whitespace,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Syntax {
     language: &'static str,
     case_sensitive: bool,
@@ -29,15 +29,22 @@ pub struct Syntax {
     types: HashSet<&'static str>,
     special: HashSet<&'static str>,
 }
+impl Default for Syntax {
+    fn default() -> Self {
+        Syntax::rust()
+    }
+}
 impl Hash for Syntax {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.language.hash(state);
     }
 }
 impl Syntax {
+    #[must_use]
     pub fn comment(&self) -> &str {
         self.comment
     }
+    #[must_use]
     pub fn is_keyword(&self, word: &str) -> bool {
         if self.case_sensitive {
             self.keywords.contains(&word)
@@ -45,6 +52,7 @@ impl Syntax {
             self.keywords.contains(word.to_ascii_uppercase().as_str())
         }
     }
+    #[must_use]
     pub fn is_type(&self, word: &str) -> bool {
         if self.case_sensitive {
             self.types.contains(&word)
@@ -52,6 +60,7 @@ impl Syntax {
             self.types.contains(word.to_ascii_uppercase().as_str())
         }
     }
+    #[must_use]
     pub fn is_special(&self, word: &str) -> bool {
         if self.case_sensitive {
             self.special.contains(&word)
@@ -62,6 +71,7 @@ impl Syntax {
 }
 
 impl Syntax {
+    #[must_use]
     pub fn simple(comment: &'static str) -> Self {
         Syntax {
             language: "",

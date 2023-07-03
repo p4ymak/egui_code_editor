@@ -2,6 +2,7 @@ use super::Syntax;
 use std::collections::HashSet;
 
 impl Syntax {
+    #[must_use]
     pub fn rust() -> Self {
         Syntax {
             language: "Rust",

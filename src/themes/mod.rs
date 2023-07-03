@@ -21,7 +21,7 @@ fn color_from_hex(hex: &str) -> Option<Color32> {
     Some(color)
 }
 
-#[derive(Hash, Clone)]
+#[derive(Hash, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ColorTheme {
     pub dark: bool,
     pub bg: &'static str,
@@ -37,18 +37,26 @@ pub struct ColorTheme {
     pub types: &'static str,
     pub special: &'static str,
 }
-
+impl Default for ColorTheme {
+    fn default() -> Self {
+        ColorTheme::GRUVBOX
+    }
+}
 impl ColorTheme {
+    #[must_use]
     pub fn bg(&self) -> Color32 {
         color_from_hex(self.bg).unwrap_or(ERROR_COLOR)
     }
+    #[must_use]
     pub fn cursor(&self) -> Color32 {
         color_from_hex(self.cursor).unwrap_or(ERROR_COLOR)
     }
+    #[must_use]
     pub fn selection(&self) -> Color32 {
         color_from_hex(self.selection).unwrap_or(ERROR_COLOR)
     }
 
+    #[must_use]
     pub fn style(&self) -> Style {
         let mut style = Style::default();
         style.visuals.widgets.noninteractive.bg_fill = self.bg();
@@ -58,6 +66,8 @@ impl ColorTheme {
         style.visuals.extreme_bg_color = self.bg();
         style
     }
+
+    #[must_use]
     pub const fn type_color_str(&self, ty: TokenType) -> &'static str {
         match ty {
             TokenType::Comment => self.comments,
@@ -72,6 +82,8 @@ impl ColorTheme {
             TokenType::Whitespace => self.bg,
         }
     }
+
+    #[must_use]
     pub fn type_color(&self, ty: TokenType) -> Color32 {
         match ty {
             TokenType::Comment => color_from_hex(self.comments),
@@ -87,6 +99,8 @@ impl ColorTheme {
         }
         .unwrap_or(ERROR_COLOR)
     }
+
+    #[must_use]
     pub fn monocolor(
         dark: bool,
         bg: &'static str,

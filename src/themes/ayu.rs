@@ -2,7 +2,7 @@ use super::ColorTheme;
 
 impl ColorTheme {
     /// Author: André Sá <enkodr@outlook.com>
-    /// Based on the AYU theme colors from https://github.com/dempfi/ayu
+    /// Based on the AYU theme colors from <https://github.com/dempfi/ayu>
     pub const AYU: ColorTheme = ColorTheme {
         dark: false,
         bg: "#fafafa",

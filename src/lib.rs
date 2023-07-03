@@ -1,26 +1,34 @@
+// #![warn(
+//     clippy::all,
+//     clippy::pedantic,
+//     clippy::cargo,
+//     clippy::restriction,
+//     clippy::nursery
+// )]
+
 mod highlighting;
 mod syntax;
 mod themes;
 
 use highlighting::highlight;
 use std::hash::{Hash, Hasher};
+
 pub use syntax::{Syntax, TokenType};
 pub use themes::ColorTheme;
 
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[cfg_attr(feature = "serde", serde(default))]
-
+#[derive(Clone, Debug, PartialEq)]
 pub struct CodeEditor {
-    rows: usize,
     theme: ColorTheme,
-    fontsize: f32,
-    numlines: bool,
     syntax: Syntax,
+    numlines: bool,
+    fontsize: f32,
+    rows: usize,
 }
 
 impl Hash for CodeEditor {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.theme.hash(state);
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
         (self.fontsize as u32).hash(state);
         self.syntax.hash(state);
     }
@@ -29,38 +37,45 @@ impl Hash for CodeEditor {
 impl Default for CodeEditor {
     fn default() -> CodeEditor {
         CodeEditor {
-            rows: 1,
             theme: ColorTheme::GRUVBOX,
-            fontsize: 10.0,
-            numlines: true,
             syntax: Syntax::sql(),
+            numlines: true,
+            fontsize: 10.0,
+            rows: 1,
         }
     }
 }
+
 impl CodeEditor {
-    #[allow(clippy::new_ret_no_self)]
-    pub fn with_rows(self, rows: usize) -> CodeEditor {
+    #[must_use]
+    pub fn with_rows(self, rows: usize) -> Self {
         CodeEditor { rows, ..self }
     }
-    pub fn with_theme(self, theme: ColorTheme) -> CodeEditor {
+    #[must_use]
+    pub fn with_theme(self, theme: ColorTheme) -> Self {
         CodeEditor { theme, ..self }
     }
-    pub fn with_fontsize(self, fontsize: f32) -> CodeEditor {
+    #[must_use]
+    pub fn with_fontsize(self, fontsize: f32) -> Self {
         CodeEditor { fontsize, ..self }
     }
-    pub fn with_ui_fontsize(self, ui: &mut egui::Ui) -> CodeEditor {
+    #[must_use]
+    pub fn with_ui_fontsize(self, ui: &mut egui::Ui) -> Self {
         CodeEditor {
             fontsize: egui::TextStyle::Monospace.resolve(ui.style()).size,
             ..self
         }
     }
-    pub fn with_numlines(self, numlines: bool) -> CodeEditor {
+    #[must_use]
+    pub fn with_numlines(self, numlines: bool) -> Self {
         CodeEditor { numlines, ..self }
     }
-    pub fn with_syntax(self, syntax: Syntax) -> CodeEditor {
+    #[must_use]
+    pub fn with_syntax(self, syntax: Syntax) -> Self {
         CodeEditor { syntax, ..self }
     }
 
+    #[must_use]
     pub fn format(&self, ty: TokenType) -> egui::text::TextFormat {
         let font_id = egui::FontId::monospace(self.fontsize);
         let color = self.theme.type_color(ty);
@@ -85,7 +100,8 @@ impl CodeEditor {
             .collect::<Vec<String>>()
             .join("\n");
 
-        let width = (max_indent * self.fontsize as usize) as f32 * 0.5;
+        #[allow(clippy::cast_precision_loss)]
+        let width = max_indent as f32 * self.fontsize * 0.5;
 
         let mut layouter = |ui: &egui::Ui, string: &str, _wrap_width: f32| {
             let layout_job = egui::text::LayoutJob::single_section(
@@ -135,30 +151,3 @@ impl CodeEditor {
         });
     }
 }
-
-// macro_rules! font {
-//     ($name: expr, $path: literal) => {
-//         let mut fonts = egui::FontDefinitions::default();
-//         fonts.font_data.insert(
-//             $name.to_owned(),
-//             egui::FontData::from_static(include_bytes!($path)),
-//         );
-
-//         fonts
-//             .families
-//             .insert(egui::FontFamily::Name($name.into()), vec![$name.to_owned()]);
-
-//         fonts
-//             .families
-//             .get_mut(&egui::FontFamily::Proportional)
-//             .unwrap()
-//             .insert(0, $name.to_owned());
-
-//         fonts
-//             .families
-//             .get_mut(&egui::FontFamily::Monospace)
-//             .unwrap()
-//             .insert(0, $name.to_owned());
-//         fonts
-//     };
-// }

@@ -1,8 +1,8 @@
 use super::ColorTheme;
 
 impl ColorTheme {
-    ///  Original Author: sainnhe: https://github.com/sainnhe/sonokai
-    ///  Modified by p4ymak: https://github.com/p4ymak
+    ///  Original Author: sainnhe <https://github.com/sainnhe/sonokai>
+    ///  Modified by p4ymak <https://github.com/p4ymak>
     pub const SONOKAI: ColorTheme = ColorTheme {
         dark: false,
         bg: "#2c2e34",          // bg0

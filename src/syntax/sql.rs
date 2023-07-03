@@ -2,6 +2,7 @@ use super::Syntax;
 use std::collections::HashSet;
 
 impl Syntax {
+    #[must_use]
     pub fn sql() -> Self {
         Syntax {
             language: "SQL",
@@ -126,7 +127,7 @@ impl Syntax {
                 "SET",
                 "DATABASE",
             ]),
-            special: HashSet::from(["PUBLIC", "ID"]),
+            special: HashSet::from(["PUBLIC"]),
         }
     }
 }
