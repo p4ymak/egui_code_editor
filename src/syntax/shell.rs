@@ -6,7 +6,7 @@ impl Syntax {
     pub fn shell() -> Self {
         Syntax {
             language: "Shell",
-            case_sensitive: false,
+            case_sensitive: true,
             comment: "#",
             keywords: HashSet::from([
                 "echo", "read", "set", "unset", "readonly", "shift", "export", "if", "fi", "else",

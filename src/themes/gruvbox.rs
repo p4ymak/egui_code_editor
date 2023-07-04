@@ -16,7 +16,7 @@ impl ColorTheme {
         punctuation: "#fe8019", // orange1
         strs: "#8ec07c",        // aqua1
         types: "#fabd2f",       // yellow1
-        special: "#fe8019",     // orange1
+        special: "#83a598",     // blue1
     };
 
     pub const GRUVBOX_DARK: ColorTheme = ColorTheme::GRUVBOX;
