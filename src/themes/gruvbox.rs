@@ -25,7 +25,7 @@ impl ColorTheme {
         dark: false,
         bg: "#fbf1c7",
         cursor: "#7c6f64",      // fg4
-        selection: "#bdae93",   // bg3
+        selection: "#b57614",   // yellow1
         comments: "#7c6f64",    // gray1
         functions: "#79740e",   // green1
         keywords: "#9d0006",    // red1

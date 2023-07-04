@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 pub mod rust;
+pub mod shell;
 pub mod sql;
 
 use std::collections::HashSet;
