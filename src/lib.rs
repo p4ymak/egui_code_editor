@@ -32,10 +32,10 @@ impl Default for CodeEditor {
         CodeEditor {
             id: String::from("Code Editor"),
             theme: ColorTheme::GRUVBOX,
-            syntax: Syntax::sql(),
+            syntax: Syntax::rust(),
             numlines: true,
             fontsize: 10.0,
-            rows: 1,
+            rows: 10,
         }
     }
 }
@@ -114,6 +114,7 @@ impl CodeEditor {
             );
             ui.fonts(|f| f.layout_job(layout_job))
         };
+
         ui.add(
             egui::TextEdit::multiline(&mut counter)
                 .id_source(format!("{}_numlines", self.id))

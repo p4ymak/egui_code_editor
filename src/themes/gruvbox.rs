@@ -20,4 +20,20 @@ impl ColorTheme {
     };
 
     pub const GRUVBOX_DARK: ColorTheme = ColorTheme::GRUVBOX;
+
+    pub const GRUVBOX_LIGHT: ColorTheme = ColorTheme {
+        dark: false,
+        bg: "#fbf1c7",
+        cursor: "#7c6f64",      // fg4
+        selection: "#bdae93",   // bg3
+        comments: "#7c6f64",    // gray1
+        functions: "#79740e",   // green1
+        keywords: "#9d0006",    // red1
+        literals: "#282828",    // fg1
+        numerics: "#8f3f71",    // purple1
+        punctuation: "#af3a03", // orange1
+        strs: "#427b58",        // aqua1
+        types: "#b57614",       // yellow1
+        special: "#af3a03",     // orange1
+    };
 }
