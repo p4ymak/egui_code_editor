@@ -1,5 +1,8 @@
 # Egui Code Editor
 
+Text Editor Widget for [egui](https://github.com/emilk/egui) with numbered lines and simple syntax highlighting based on keywords sets.
+
+
 ## Themes
 
 Based on themes in [Helix Editor](https://github.com/helix-editor/helix).
