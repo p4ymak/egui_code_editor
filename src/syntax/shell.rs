@@ -13,6 +13,7 @@ impl Syntax {
                 "while", "do", "done", "for", "until", "case", "esac", "break", "continue", "exit",
                 "return", "trap", "wait", "eval", "exec", "ulimit", "umask",
             ]),
+            comment_multiline: [": '", "'"],
             types: HashSet::from([
                 "ENV",
                 "HOME",

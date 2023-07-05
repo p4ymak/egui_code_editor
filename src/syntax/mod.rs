@@ -23,12 +23,13 @@ pub enum TokenType {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Syntax {
-    language: &'static str,
-    case_sensitive: bool,
-    comment: &'static str,
-    keywords: HashSet<&'static str>,
-    types: HashSet<&'static str>,
-    special: HashSet<&'static str>,
+    pub language: &'static str,
+    pub case_sensitive: bool,
+    pub comment: &'static str,
+    pub comment_multiline: [&'static str; 2],
+    pub keywords: HashSet<&'static str>,
+    pub types: HashSet<&'static str>,
+    pub special: HashSet<&'static str>,
 }
 impl Default for Syntax {
     fn default() -> Self {
@@ -78,6 +79,7 @@ impl Syntax {
             language: "",
             case_sensitive: false,
             comment,
+            comment_multiline: [comment; 2],
             keywords: HashSet::new(),
             types: HashSet::new(),
             special: HashSet::new(),

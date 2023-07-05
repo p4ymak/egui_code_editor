@@ -8,6 +8,7 @@ impl Syntax {
             language: "SQL",
             case_sensitive: false,
             comment: "--",
+            comment_multiline: ["/*", "*/"],
             keywords: HashSet::from([
                 "ADD",
                 "ALL",

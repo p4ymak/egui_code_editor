@@ -27,6 +27,16 @@ impl Highlighter {
                 job.append(&text[..end], 0.0, editor.format(TokenType::Comment));
                 text = &text[end..];
             }
+            // Multiline Comment
+            else if text.starts_with(editor.syntax.comment_multiline[0]) {
+                let comment_end = editor.syntax.comment_multiline[1];
+                let end = text[1..]
+                    .find(comment_end)
+                    .map(|i| i + 1 + comment_end.len())
+                    .unwrap_or(text.len());
+                job.append(&text[..end], 0.0, editor.format(TokenType::Comment));
+                text = &text[end..];
+            }
             // Numeric
             else if text.starts_with(char::is_numeric) {
                 let end = text[1..]
