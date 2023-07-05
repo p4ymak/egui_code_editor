@@ -3,7 +3,6 @@
 ## Themes
 
 Based on themes in [Helix Editor](https://github.com/helix-editor/helix)
-
 Font used in examples is [Comic Code by Toshi Omagari](https://tosche.net/fonts/comic-code)
 
 ### Ayu
