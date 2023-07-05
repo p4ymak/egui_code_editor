@@ -5,7 +5,7 @@ pub mod gruvbox;
 pub mod sonokai;
 
 use super::syntax::TokenType;
-use egui::{Color32, Style};
+use egui::Color32;
 
 pub const ERROR_COLOR: Color32 = Color32::from_rgb(255, 0, 255);
 
@@ -21,8 +21,9 @@ fn color_from_hex(hex: &str) -> Option<Color32> {
     Some(color)
 }
 
-#[derive(Hash, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Hash, Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ColorTheme {
+    pub name: &'static str,
     pub dark: bool,
     pub bg: &'static str,
     pub cursor: &'static str,
@@ -56,15 +57,15 @@ impl ColorTheme {
         color_from_hex(self.selection).unwrap_or(ERROR_COLOR)
     }
 
-    #[must_use]
-    pub fn style(&self) -> Style {
-        let mut style = Style::default();
+    pub fn modify_style(&self, ui: &mut egui::Ui, fontsize: f32) {
+        let style = ui.style_mut();
         style.visuals.widgets.noninteractive.bg_fill = self.bg();
         style.visuals.window_fill = self.bg();
         style.visuals.selection.stroke.color = self.cursor();
         style.visuals.selection.bg_fill = self.selection();
         style.visuals.extreme_bg_color = self.bg();
-        style
+        style.override_font_id = Some(egui::FontId::monospace(fontsize));
+        style.visuals.text_cursor_width = fontsize * 0.1;
     }
 
     #[must_use]
@@ -109,6 +110,7 @@ impl ColorTheme {
         selection: &'static str,
     ) -> Self {
         ColorTheme {
+            name: "monocolor",
             dark,
             bg,
             cursor,

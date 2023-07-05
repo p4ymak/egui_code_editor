@@ -4,6 +4,7 @@ impl ColorTheme {
     /// Author : Jakub Bartodziej <kubabartodziej@gmail.com>
     /// Theme uses the gruvbox dark palette with standard contrast <github.com/morhetz/gruvbox>
     pub const GRUVBOX: ColorTheme = ColorTheme {
+        name: "Gruvbox",
         dark: true,
         bg: "#282828",
         cursor: "#a89984",      // fg4
@@ -22,6 +23,7 @@ impl ColorTheme {
     pub const GRUVBOX_DARK: ColorTheme = ColorTheme::GRUVBOX;
 
     pub const GRUVBOX_LIGHT: ColorTheme = ColorTheme {
+        name: "Gruvbox Light",
         dark: false,
         bg: "#fbf1c7",
         cursor: "#7c6f64",      // fg4

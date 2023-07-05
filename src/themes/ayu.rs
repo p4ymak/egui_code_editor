@@ -4,6 +4,7 @@ impl ColorTheme {
     /// Author: André Sá <enkodr@outlook.com>
     /// Based on the AYU theme colors from <https://github.com/dempfi/ayu>
     pub const AYU: ColorTheme = ColorTheme {
+        name: "Ayu",
         dark: false,
         bg: "#fafafa",
         cursor: "#5c6166",      // foreground
@@ -20,6 +21,7 @@ impl ColorTheme {
     };
 
     pub const AYU_MIRAGE: ColorTheme = ColorTheme {
+        name: "Ayu Mirage",
         dark: true,
         bg: "#1f2430",
         cursor: "#cccac2",      // foreground
@@ -36,6 +38,7 @@ impl ColorTheme {
     };
 
     pub const AYU_DARK: ColorTheme = ColorTheme {
+        name: "Ayu Dark",
         dark: true,
         bg: "#0f1419",
         cursor: "#bfbdb6",      // foreground

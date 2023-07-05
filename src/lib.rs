@@ -131,11 +131,9 @@ impl CodeEditor {
         let mut response: Option<egui::Response> = None;
         egui::ScrollArea::vertical()
             .id_source(format!("{}_outer_scroll", self.id))
-            .show(ui, |v| {
-                v.set_style(self.theme.style());
-                v.style_mut().override_font_id = Some(egui::FontId::monospace(self.fontsize));
-                v.style_mut().visuals.text_cursor_width = self.fontsize * 0.1;
-                v.horizontal_top(|h| {
+            .show(ui, |ui| {
+                self.theme.modify_style(ui, self.fontsize);
+                ui.horizontal_top(|h| {
                     if self.numlines {
                         self.numlines_show(h, text);
                     }
