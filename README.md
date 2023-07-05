@@ -3,7 +3,7 @@
 
 ## Usage:
 
-'''rust
+```rust
 use egui_code_editor::{CodeEditor, ColorTheme, Syntax};
 CodeEditor::default()
   .id_source("code editor")
