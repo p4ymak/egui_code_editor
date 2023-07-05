@@ -2,22 +2,30 @@
 
 ## Themes
 
-Based on themse in [Helix Editor](https://github.com/helix-editor/helix)
+Based on themes in [Helix Editor](https://github.com/helix-editor/helix)
 
+### Ayu
 ![Ayu](/screenshots/ayu.png)
 
+### Ayu Dark
 ![Ayu Dark](/screenshots/ayu_dark.png)
 
+### Ayu Mirage
 ![Ayu Mirage](/screenshots/ayu_mirage.png)
 
+### Github Dark
 ![Github Dark](/screenshots/github_dark.png)
 
+### Github Light
 ![Github Light](/screenshots/github_light.png)
 
+### Gruvbox
 ![Gruvbox](/screenshots/gruvbox.png)
 
+### Gruvbox Light
 ![Gruvbox Light](/screenshots/gruvbox_light.png)
 
+### Sonokai
 ![Sonokai](/screenshots/sonokai.png)
 
 
