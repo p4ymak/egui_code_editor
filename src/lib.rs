@@ -7,6 +7,7 @@ use std::hash::{Hash, Hasher};
 
 pub use syntax::{Syntax, TokenType};
 pub use themes::ColorTheme;
+pub use themes::DEFAULT_THEMES;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct CodeEditor {
@@ -49,18 +50,28 @@ impl CodeEditor {
         }
     }
     #[must_use]
+    /// Minimum number of rows to show.
+    ///
+    /// Default: 10
     pub fn with_rows(self, rows: usize) -> Self {
         CodeEditor { rows, ..self }
     }
     #[must_use]
+    /// Use custom Color Theme
+    ///
+    /// Default: Gruvbox
     pub fn with_theme(self, theme: ColorTheme) -> Self {
         CodeEditor { theme, ..self }
     }
     #[must_use]
+    /// Use custom font size
+    ///
+    /// Default: 10.0
     pub fn with_fontsize(self, fontsize: f32) -> Self {
         CodeEditor { fontsize, ..self }
     }
     #[must_use]
+    /// Use UI font size
     pub fn with_ui_fontsize(self, ui: &mut egui::Ui) -> Self {
         CodeEditor {
             fontsize: egui::TextStyle::Monospace.resolve(ui.style()).size,
@@ -68,16 +79,22 @@ impl CodeEditor {
         }
     }
     #[must_use]
+    /// Show or hide lines numbering
+    ///
+    /// Default: true
     pub fn with_numlines(self, numlines: bool) -> Self {
         CodeEditor { numlines, ..self }
     }
     #[must_use]
+    /// Use custom syntax for highlighting
+    ///
+    /// Default: Rust
     pub fn with_syntax(self, syntax: Syntax) -> Self {
         CodeEditor { syntax, ..self }
     }
 
     #[must_use]
-    pub fn format(&self, ty: TokenType) -> egui::text::TextFormat {
+    fn format(&self, ty: TokenType) -> egui::text::TextFormat {
         let font_id = egui::FontId::monospace(self.fontsize);
         let color = self.theme.type_color(ty);
         egui::text::TextFormat::simple(font_id, color)
@@ -126,7 +143,7 @@ impl CodeEditor {
                 .layouter(&mut layouter),
         );
     }
-
+    /// Show Code Editor
     pub fn show(&mut self, ui: &mut egui::Ui, text: &mut String) -> egui::Response {
         let mut response: Option<egui::Response> = None;
         egui::ScrollArea::vertical()

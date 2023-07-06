@@ -8,6 +8,16 @@ use super::syntax::TokenType;
 use egui::Color32;
 
 pub const ERROR_COLOR: Color32 = Color32::from_rgb(255, 0, 255);
+pub const DEFAULT_THEMES: [ColorTheme; 8] = [
+    ColorTheme::AYU,
+    ColorTheme::AYU_MIRAGE,
+    ColorTheme::AYU_DARK,
+    ColorTheme::GITHUB_DARK,
+    ColorTheme::GITHUB_LIGHT,
+    ColorTheme::GRUVBOX,
+    ColorTheme::GRUVBOX_LIGHT,
+    ColorTheme::SONOKAI,
+];
 
 fn color_from_hex(hex: &str) -> Option<Color32> {
     if hex == "none" {
