@@ -8,7 +8,7 @@ repository = "https://github.com/p4ymak/egui_code_editor"
 description = "egui Code Editor widget with numbered lines and syntax highlighting.."
 readme = "README.md"
 categories = ["GUI", "Text editors"]
-keywords = ["egui", "GUI", "code", "editor", "syntax", "highlighting"]
+keywords = ["egui", "GUI", "editor", "syntax", "highlighting"]
 
 [dependencies]
 egui = "0.22.0"
