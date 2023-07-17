@@ -2,7 +2,7 @@ use super::ColorTheme;
 
 impl ColorTheme {
     /// Author : Jakub Bartodziej <kubabartodziej@gmail.com>
-    /// Theme uses the gruvbox dark palette with standard contrast <github.com/morhetz/gruvbox>
+    /// Theme uses the gruvbox dark palette with standard contrast <https://github.com/morhetz/gruvbox>
     pub const GRUVBOX: ColorTheme = ColorTheme {
         name: "Gruvbox",
         dark: true,

@@ -1,11 +1,13 @@
 [package]
 name = "egui_code_editor"
+authors = ["Roman Chumak <p4ymak@yandex.ru>"]
 version = "0.1.2"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/p4ymak/egui_code_editor"
-description = "egui code editor widget with numbered lines and syntax highlighting.."
+description = "egui Code Editor widget with numbered lines and syntax highlighting.."
 readme = "README.md"
+categories = ["GUI", "Text editors"]
 keywords = ["egui", "GUI", "code", "editor", "syntax", "highlighting"]
 
 [dependencies]
