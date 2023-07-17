@@ -1,4 +1,21 @@
-#![doc = include_str!("../README.md")]
+#![allow(rustdoc::invalid_rust_codeblocks)]
+//! Text Editor Widget for [egui](https://github.com/emilk/egui) with numbered lines and simple syntax highlighting based on keywords sets.
+//!
+//! ## Usage
+//!
+//! ```rust
+//! use egui_code_editor::{CodeEditor, ColorTheme, Syntax};
+//! CodeEditor::default()
+//!   .id_source("code editor")
+//!   .with_rows(12)
+//!   .with_fontsize(14.0)
+//!   .with_theme(ColorTheme::GRUVBOX)
+//!   .with_syntax(Syntax::rust())
+//!   .with_numlines(true)
+//!   .show(ui, &mut self.code);
+//!   });
+//! }
+//! ```
 
 mod highlighting;
 mod syntax;
@@ -6,12 +23,13 @@ mod themes;
 
 use highlighting::highlight;
 use std::hash::{Hash, Hasher};
-
-pub use syntax::{Syntax, TokenType};
+pub use syntax::Syntax;
+use syntax::TokenType;
 pub use themes::ColorTheme;
 pub use themes::DEFAULT_THEMES;
 
 #[derive(Clone, Debug, PartialEq)]
+/// CodeEditor struct which stores settings for highlighting.
 pub struct CodeEditor {
     id: String,
     theme: ColorTheme,
@@ -54,21 +72,21 @@ impl CodeEditor {
     #[must_use]
     /// Minimum number of rows to show.
     ///
-    /// Default: 10
+    /// **Default: 10**
     pub fn with_rows(self, rows: usize) -> Self {
         CodeEditor { rows, ..self }
     }
     #[must_use]
     /// Use custom Color Theme
     ///
-    /// Default: Gruvbox
+    /// **Default: Gruvbox**
     pub fn with_theme(self, theme: ColorTheme) -> Self {
         CodeEditor { theme, ..self }
     }
     #[must_use]
     /// Use custom font size
     ///
-    /// Default: 10.0
+    /// **Default: 10.0**
     pub fn with_fontsize(self, fontsize: f32) -> Self {
         CodeEditor { fontsize, ..self }
     }
@@ -83,14 +101,14 @@ impl CodeEditor {
     #[must_use]
     /// Show or hide lines numbering
     ///
-    /// Default: true
+    /// **Default: true**
     pub fn with_numlines(self, numlines: bool) -> Self {
         CodeEditor { numlines, ..self }
     }
     #[must_use]
     /// Use custom syntax for highlighting
     ///
-    /// Default: Rust
+    /// **Default: Rust**
     pub fn with_syntax(self, syntax: Syntax) -> Self {
         CodeEditor { syntax, ..self }
     }

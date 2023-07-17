@@ -8,6 +8,8 @@ use super::syntax::TokenType;
 use egui::Color32;
 
 pub const ERROR_COLOR: Color32 = Color32::from_rgb(255, 0, 255);
+/// Array of default themes.
+
 pub const DEFAULT_THEMES: [ColorTheme; 8] = [
     ColorTheme::AYU,
     ColorTheme::AYU_MIRAGE,
@@ -32,6 +34,7 @@ fn color_from_hex(hex: &str) -> Option<Color32> {
 }
 
 #[derive(Hash, Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+/// Colors in hexadecimal notation as used in HTML and CSS.
 pub struct ColorTheme {
     pub name: &'static str,
     pub dark: bool,

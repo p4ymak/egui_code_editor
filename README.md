@@ -26,25 +26,25 @@ Based on themes in [Helix Editor](https://github.com/helix-editor/helix).
 Font used in examples is [Comic Code](https://tosche.net/fonts/comic-code) by Toshi Omagari.
 
 ### Ayu
-![Ayu](url:https://github.com/p4ymak/egui_code_editor/blob/main/screenshots/ayu.png)
+![Ayu](screenshots/ayu.png)
 
 ### Ayu Dark
-![Ayu Dark](url:https://github.com/p4ymak/egui_code_editor/blob/main/screenshots/ayu_dark.png)
+![Ayu Dark](screenshots/ayu_dark.png)
 
 ### Ayu Mirage
-![Ayu Mirage](url:https://github.com/p4ymak/egui_code_editor/blob/main/screenshots/ayu_mirage.png)
+![Ayu Mirage](screenshots/ayu_mirage.png)
 
 ### Github Dark
-![Github Dark](url:https://github.com/p4ymak/egui_code_editor/blob/main/screenshots/github_dark.png)
+![Github Dark](screenshots/github_dark.png)
 
 ### Github Light
-![Github Light](url:https://github.com/p4ymak/egui_code_editor/blob/main/screenshots/github_light.png)
+![Github Light](screenshots/github_light.png)
 
 ### Gruvbox
-![Gruvbox](url:https://github.com/p4ymak/egui_code_editor/blob/main/screenshots/gruvbox.png)
+![Gruvbox](screenshots/gruvbox.png)
 
 ### Gruvbox Light
-![Gruvbox Light](url:https://github.com/p4ymak/egui_code_editor/blob/main/screenshots/gruvbox_light.png)
+![Gruvbox Light](screenshots/gruvbox_light.png)
 
 ### Sonokai
-![Sonokai](url:https://github.com/p4ymak/egui_code_editor/blob/main/screenshots/sonokai.png)
+![Sonokai](screenshots/sonokai.png)

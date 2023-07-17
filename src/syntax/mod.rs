@@ -22,6 +22,7 @@ pub enum TokenType {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+/// Rules for highlighting.
 pub struct Syntax {
     pub language: &'static str,
     pub case_sensitive: bool,
