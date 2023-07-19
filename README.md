@@ -6,6 +6,7 @@ Text Editor Widget for [egui](https://github.com/emilk/egui) with numbered lines
 
 ```rust
 use egui_code_editor::{CodeEditor, ColorTheme, Syntax};
+
 CodeEditor::default()
   .id_source("code editor")
   .with_rows(12)

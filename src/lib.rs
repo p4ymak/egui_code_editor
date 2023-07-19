@@ -5,6 +5,7 @@
 //!
 //! ```rust
 //! use egui_code_editor::{CodeEditor, ColorTheme, Syntax};
+//!
 //! CodeEditor::default()
 //!   .id_source("code editor")
 //!   .with_rows(12)
