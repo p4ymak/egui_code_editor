@@ -25,7 +25,7 @@ impl ColorTheme {
         dark: false,
         bg: "#ffffff",          // default
         cursor: "#000000",      // invert
-        selection: "#ddf4ff",   // scale.blue.0
+        selection: "#0550ae",   // scale.blue.6
         comments: "#57606a",    // fg.muted
         functions: "#8250df",   // done.fg
         keywords: "#cf222e",    // scale.red.5
