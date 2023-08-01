@@ -38,6 +38,7 @@ pub struct CodeEditor {
     numlines: bool,
     fontsize: f32,
     rows: usize,
+    stick_to_bottom: bool,
 }
 
 impl Hash for CodeEditor {
@@ -58,6 +59,7 @@ impl Default for CodeEditor {
             numlines: true,
             fontsize: 10.0,
             rows: 10,
+            stick_to_bottom: false,
         }
     }
 }
@@ -70,6 +72,7 @@ impl CodeEditor {
             ..self
         }
     }
+
     #[must_use]
     /// Minimum number of rows to show.
     ///
@@ -77,6 +80,7 @@ impl CodeEditor {
     pub fn with_rows(self, rows: usize) -> Self {
         CodeEditor { rows, ..self }
     }
+
     #[must_use]
     /// Use custom Color Theme
     ///
@@ -84,6 +88,7 @@ impl CodeEditor {
     pub fn with_theme(self, theme: ColorTheme) -> Self {
         CodeEditor { theme, ..self }
     }
+
     #[must_use]
     /// Use custom font size
     ///
@@ -91,6 +96,7 @@ impl CodeEditor {
     pub fn with_fontsize(self, fontsize: f32) -> Self {
         CodeEditor { fontsize, ..self }
     }
+
     #[must_use]
     /// Use UI font size
     pub fn with_ui_fontsize(self, ui: &mut egui::Ui) -> Self {
@@ -99,6 +105,7 @@ impl CodeEditor {
             ..self
         }
     }
+
     #[must_use]
     /// Show or hide lines numbering
     ///
@@ -106,6 +113,7 @@ impl CodeEditor {
     pub fn with_numlines(self, numlines: bool) -> Self {
         CodeEditor { numlines, ..self }
     }
+
     #[must_use]
     /// Use custom syntax for highlighting
     ///
@@ -115,11 +123,29 @@ impl CodeEditor {
     }
 
     #[must_use]
+    /// Stick to bottom
+    /// The scroll handle will stick to the bottom position even while the content size
+    /// changes dynamically. This can be useful to simulate terminal UIs or log/info scrollers.
+    /// The scroll handle remains stuck until user manually changes position. Once "unstuck"
+    /// it will remain focused on whatever content viewport the user left it on. If the scroll
+    /// handle is dragged to the bottom it will again become stuck and remain there until manually
+    /// pulled from the end position.
+    ///
+    /// **Default: false**
+    pub fn stick_to_bottom(self, stick_to_bottom: bool) -> Self {
+        CodeEditor {
+            stick_to_bottom,
+            ..self
+        }
+    }
+
+    #[must_use]
     fn format(&self, ty: TokenType) -> egui::text::TextFormat {
         let font_id = egui::FontId::monospace(self.fontsize);
         let color = self.theme.type_color(ty);
         egui::text::TextFormat::simple(font_id, color)
     }
+
     fn numlines_show(&self, ui: &mut egui::Ui, text: &str) {
         let total = if text.ends_with('\n') || text.is_empty() {
             text.lines().count() + 1
@@ -164,11 +190,13 @@ impl CodeEditor {
                 .layouter(&mut layouter),
         );
     }
+
     /// Show Code Editor
     pub fn show(&mut self, ui: &mut egui::Ui, text: &mut String) -> egui::Response {
         let mut response: Option<egui::Response> = None;
         egui::ScrollArea::vertical()
             .id_source(format!("{}_outer_scroll", self.id))
+            .stick_to_bottom(self.stick_to_bottom)
             .show(ui, |ui| {
                 self.theme.modify_style(ui, self.fontsize);
                 ui.horizontal_top(|h| {
