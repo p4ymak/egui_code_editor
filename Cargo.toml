@@ -7,7 +7,7 @@ license = "MIT"
 repository = "https://github.com/p4ymak/egui_code_editor"
 description = "egui Code Editor widget with numbered lines and syntax highlighting.."
 readme = "README.md"
-categories = ["GUI", "Text editors"]
+categories = ["gui", "text-editors"]
 keywords = ["egui", "GUI", "editor", "syntax", "highlighting"]
 
 [dependencies]
