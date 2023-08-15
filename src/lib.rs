@@ -38,6 +38,7 @@ pub struct CodeEditor {
     numlines: bool,
     fontsize: f32,
     rows: usize,
+    vscroll: bool,
     stick_to_bottom: bool,
 }
 
@@ -59,6 +60,7 @@ impl Default for CodeEditor {
             numlines: true,
             fontsize: 10.0,
             rows: 10,
+            vscroll: true,
             stick_to_bottom: false,
         }
     }
@@ -120,6 +122,17 @@ impl CodeEditor {
     /// **Default: Rust**
     pub fn with_syntax(self, syntax: Syntax) -> Self {
         CodeEditor { syntax, ..self }
+    }
+
+    #[must_use]
+    /// Turn on/off scrolling on the vertical axis.
+    ///
+    /// **Default: true**
+    pub fn vscroll(self, v_scroll: bool) -> Self {
+        CodeEditor {
+            vscroll: v_scroll,
+            ..self
+        }
     }
 
     #[must_use]
@@ -194,35 +207,41 @@ impl CodeEditor {
     /// Show Code Editor
     pub fn show(&mut self, ui: &mut egui::Ui, text: &mut String) -> egui::Response {
         let mut response: Option<egui::Response> = None;
-        egui::ScrollArea::vertical()
-            .id_source(format!("{}_outer_scroll", self.id))
-            .stick_to_bottom(self.stick_to_bottom)
-            .show(ui, |ui| {
-                self.theme.modify_style(ui, self.fontsize);
-                ui.horizontal_top(|h| {
-                    if self.numlines {
-                        self.numlines_show(h, text);
-                    }
-                    egui::ScrollArea::horizontal()
-                        .id_source(format!("{}_inner_scroll", self.id))
-                        .show(h, |ui| {
-                            let mut layouter = |ui: &egui::Ui, string: &str, _wrap_width: f32| {
-                                let layout_job = highlight(ui.ctx(), self, string);
-                                ui.fonts(|f| f.layout_job(layout_job))
-                            };
-                            let resp = ui.add(
-                                egui::TextEdit::multiline(text)
-                                    .id_source(&self.id)
-                                    .lock_focus(true)
-                                    .desired_rows(self.rows)
-                                    .frame(true)
-                                    .desired_width(f32::MAX)
-                                    .layouter(&mut layouter),
-                            );
-                            response = Some(resp);
-                        });
-                });
+        let mut code_editor = |ui: &mut egui::Ui| {
+            ui.horizontal_top(|h| {
+                self.theme.modify_style(h, self.fontsize);
+                if self.numlines {
+                    self.numlines_show(h, text);
+                }
+                egui::ScrollArea::horizontal()
+                    .id_source(format!("{}_inner_scroll", self.id))
+                    .show(h, |ui| {
+                        let mut layouter = |ui: &egui::Ui, string: &str, _wrap_width: f32| {
+                            let layout_job = highlight(ui.ctx(), self, string);
+                            ui.fonts(|f| f.layout_job(layout_job))
+                        };
+                        let resp = ui.add(
+                            egui::TextEdit::multiline(text)
+                                .id_source(&self.id)
+                                .lock_focus(true)
+                                .desired_rows(self.rows)
+                                .frame(true)
+                                .desired_width(f32::MAX)
+                                .layouter(&mut layouter),
+                        );
+                        response = Some(resp);
+                    });
             });
+        };
+        if self.vscroll {
+            egui::ScrollArea::vertical()
+                .id_source(format!("{}_outer_scroll", self.id))
+                .stick_to_bottom(self.stick_to_bottom)
+                .show(ui, code_editor);
+        } else {
+            code_editor(ui);
+        }
+
         response.expect("response should exist at this point")
     }
 }
