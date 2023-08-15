@@ -126,6 +126,7 @@ impl Syntax {
                 "UNIQUEIDENTIFIER",
                 "SQL_VARIANT",
                 "XML",
+                "XMLTYPE",
                 "TABLE",
                 "SET",
                 "DATABASE",
