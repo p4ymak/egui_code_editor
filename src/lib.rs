@@ -40,6 +40,7 @@ pub struct CodeEditor {
     rows: usize,
     vscroll: bool,
     stick_to_bottom: bool,
+    shrink: bool,
 }
 
 impl Hash for CodeEditor {
@@ -62,6 +63,7 @@ impl Default for CodeEditor {
             rows: 10,
             vscroll: true,
             stick_to_bottom: false,
+            shrink: false,
         }
     }
 }
@@ -128,11 +130,15 @@ impl CodeEditor {
     /// Turn on/off scrolling on the vertical axis.
     ///
     /// **Default: true**
-    pub fn vscroll(self, v_scroll: bool) -> Self {
-        CodeEditor {
-            vscroll: v_scroll,
-            ..self
-        }
+    pub fn vscroll(self, vscroll: bool) -> Self {
+        CodeEditor { vscroll, ..self }
+    }
+    #[must_use]
+    /// Should the containing area shrink if the content is small?
+    ///
+    /// **Default: false**
+    pub fn auto_shrink(self, shrink: bool) -> Self {
+        CodeEditor { shrink, ..self }
     }
 
     #[must_use]
@@ -226,7 +232,7 @@ impl CodeEditor {
                                 .lock_focus(true)
                                 .desired_rows(self.rows)
                                 .frame(true)
-                                .desired_width(f32::MAX)
+                                .desired_width(if self.shrink { 0.0 } else { f32::MAX })
                                 .layouter(&mut layouter),
                         );
                         response = Some(resp);
