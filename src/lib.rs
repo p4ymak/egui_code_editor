@@ -14,8 +14,6 @@
 //!   .with_syntax(Syntax::rust())
 //!   .with_numlines(true)
 //!   .show(ui, &mut self.code);
-//!   });
-//! }
 //! ```
 
 mod highlighting;
