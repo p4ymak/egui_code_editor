@@ -22,6 +22,7 @@ mod highlighting;
 mod syntax;
 mod themes;
 
+use egui::widgets::text_edit::TextEditOutput;
 use highlighting::highlight;
 use std::hash::{Hash, Hasher};
 pub use syntax::Syntax;
@@ -211,8 +212,8 @@ impl CodeEditor {
     }
 
     /// Show Code Editor
-    pub fn show(&mut self, ui: &mut egui::Ui, text: &mut String) -> egui::Response {
-        let mut response: Option<egui::Response> = None;
+    pub fn show(&mut self, ui: &mut egui::Ui, text: &mut String) -> TextEditOutput {
+        let mut text_edit_output: Option<TextEditOutput> = None;
         let mut code_editor = |ui: &mut egui::Ui| {
             ui.horizontal_top(|h| {
                 self.theme.modify_style(h, self.fontsize);
@@ -226,16 +227,15 @@ impl CodeEditor {
                             let layout_job = highlight(ui.ctx(), self, string);
                             ui.fonts(|f| f.layout_job(layout_job))
                         };
-                        let resp = ui.add(
-                            egui::TextEdit::multiline(text)
-                                .id_source(&self.id)
-                                .lock_focus(true)
-                                .desired_rows(self.rows)
-                                .frame(true)
-                                .desired_width(if self.shrink { 0.0 } else { f32::MAX })
-                                .layouter(&mut layouter),
-                        );
-                        response = Some(resp);
+                        let output = egui::TextEdit::multiline(text)
+                            .id_source(&self.id)
+                            .lock_focus(true)
+                            .desired_rows(self.rows)
+                            .frame(true)
+                            .desired_width(if self.shrink { 0.0 } else { f32::MAX })
+                            .layouter(&mut layouter)
+                            .show(ui);
+                        text_edit_output = Some(output);
                     });
             });
         };
@@ -248,6 +248,6 @@ impl CodeEditor {
             code_editor(ui);
         }
 
-        response.expect("response should exist at this point")
+        text_edit_output.expect("TextEditOutput should exist at this point")
     }
 }
