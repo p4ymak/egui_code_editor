@@ -78,7 +78,7 @@ impl ColorTheme {
         style.visuals.selection.bg_fill = self.selection();
         style.visuals.extreme_bg_color = self.bg();
         style.override_font_id = Some(egui::FontId::monospace(fontsize));
-        style.visuals.text_cursor_width = fontsize * 0.1;
+        style.visuals.text_cursor.width = fontsize * 0.1;
     }
 
     #[must_use]
