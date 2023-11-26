@@ -13,7 +13,7 @@
 //!   .with_theme(ColorTheme::GRUVBOX)
 //!   .with_syntax(Syntax::rust())
 //!   .with_numlines(true)
-//!   .show(ui, &mut self.code);
+//!   .show(ui, &mut code, &mut highlight_row);
 //! ```
 
 mod highlighting;
@@ -164,7 +164,7 @@ impl CodeEditor {
         egui::text::TextFormat::simple(font_id, color)
     }
 
-    fn numlines_show(&self, ui: &mut egui::Ui, text: &str) {
+    fn numlines_show(&self, ui: &mut egui::Ui, text: &str, highlight_line: &mut usize) {
         let total = if text.ends_with('\n') || text.is_empty() {
             text.lines().count() + 1
         } else {
@@ -172,16 +172,6 @@ impl CodeEditor {
         }
         .max(self.rows);
         let max_indent = total.to_string().len();
-        let mut counter = (1..=total)
-            .map(|i| {
-                let label = i.to_string();
-                format!(
-                    "{}{label}",
-                    " ".repeat(max_indent.saturating_sub(label.len()))
-                )
-            })
-            .collect::<Vec<String>>()
-            .join("\n");
 
         #[allow(clippy::cast_precision_loss)]
         let width = max_indent as f32 * self.fontsize * 0.5;
@@ -197,26 +187,121 @@ impl CodeEditor {
             ui.fonts(|f| f.layout_job(layout_job))
         };
 
-        ui.add(
-            egui::TextEdit::multiline(&mut counter)
-                .id_source(format!("{}_numlines", self.id))
-                .font(egui::TextStyle::Monospace)
-                .interactive(false)
-                .frame(false)
-                .desired_rows(self.rows)
-                .desired_width(width)
-                .layouter(&mut layouter),
-        );
+        let mut layouter_highlight = |ui: &egui::Ui, string: &str, _wrap_width: f32| {
+            let layout_job = egui::text::LayoutJob::single_section(
+                string.to_string(),
+                egui::TextFormat::simple(
+                    egui::FontId::monospace(self.fontsize),
+                    egui::Color32::RED,
+                ),
+            );
+            ui.fonts(|f| f.layout_job(layout_job))
+        };
+
+        if *highlight_line != 0 {
+            let mut counter_before = (1..*highlight_line)
+                .map(|i| {
+                    let label = i.to_string();
+                    format!(
+                        "{}{label}",
+                        " ".repeat(max_indent.saturating_sub(label.len()))
+                    )
+                })
+                .collect::<Vec<String>>()
+                .join("\n");
+            let l = highlight_line.to_string();
+            let mut counter_highlight = format!(
+                "{}{l}",
+                " ".repeat(max_indent.saturating_sub(l.len()))
+            );
+            let start_line = *highlight_line + 1;
+            let mut counter_after = (start_line..=total)
+                .map(|i| {
+                    let label = i.to_string();
+                    format!(
+                        "{}{label}",
+                        " ".repeat(max_indent.saturating_sub(label.len()))
+                    )
+                })
+                .collect::<Vec<String>>()
+                .join("\n");
+            let rows_before = *highlight_line - 1;
+            let rows_highlight = 1;
+            let rows_after = self.rows - *highlight_line;
+            ui.vertical(|ui| {
+                if rows_before > 0 {
+                    egui::TextEdit::multiline(&mut counter_before)
+                        .id_source(format!("{}_numlines_before", self.id))
+                        .font(egui::TextStyle::Monospace)
+                        .interactive(false)
+                        .frame(false)
+                        .desired_rows(rows_before)
+                        .desired_width(width)
+                        .layouter(&mut layouter)
+                        .margin(egui::vec2(0.0, 0.0))
+                        .min_size(egui::vec2(0.0, 0.0))
+                        .show(ui);
+                }
+                if rows_highlight > 0 {
+                    egui::TextEdit::multiline(&mut counter_highlight)
+                        .id_source(format!("{}_numlines_highlight", self.id))
+                        .font(egui::TextStyle::Monospace)
+                        .interactive(false)
+                        .frame(false)
+                        .desired_rows(rows_highlight)
+                        .desired_width(width)
+                        .layouter(&mut layouter_highlight)
+                        .margin(egui::vec2(0.0, 0.0))
+                        .min_size(egui::vec2(0.0, 0.0))
+                        .show(ui);
+                }
+                if rows_after > 0 {
+                    egui::TextEdit::multiline(&mut counter_after)
+                        .id_source(format!("{}_numlines_after", self.id))
+                        .font(egui::TextStyle::Monospace)
+                        .interactive(false)
+                        .frame(false)
+                        .desired_rows(rows_after)
+                        .desired_width(width)
+                        .layouter(&mut layouter)
+                        .margin(egui::vec2(0.0, 0.0))
+                        .min_size(egui::vec2(0.0, 0.0))
+                        .show(ui);
+                }
+            });
+        } else {
+            let mut counter = (1..=total)
+                .map(|i| {
+                    let label = i.to_string();
+                    format!(
+                        "{}{label}",
+                        " ".repeat(max_indent.saturating_sub(label.len()))
+                    )
+                })
+                .collect::<Vec<String>>()
+                .join("\n");
+            ui.vertical(|ui| {
+                egui::TextEdit::multiline(&mut counter)
+                    .id_source(format!("{}_numlines", self.id))
+                    .font(egui::TextStyle::Monospace)
+                    .interactive(false)
+                    .frame(false)
+                    .desired_rows(self.rows)
+                    .desired_width(width)
+                    .layouter(&mut layouter)
+                    .show(ui);
+            });
+        }
     }
 
     /// Show Code Editor
-    pub fn show(&mut self, ui: &mut egui::Ui, text: &mut String) -> TextEditOutput {
+    pub fn show(&mut self, ui: &mut egui::Ui, text: &mut String, highlight_line: &mut usize) -> TextEditOutput {
         let mut text_edit_output: Option<TextEditOutput> = None;
         let mut code_editor = |ui: &mut egui::Ui| {
             ui.horizontal_top(|h| {
                 self.theme.modify_style(h, self.fontsize);
                 if self.numlines {
-                    self.numlines_show(h, text);
+                    self.numlines_show(h, text, highlight_line);
                 }
                 egui::ScrollArea::horizontal()
                     .id_source(format!("{}_inner_scroll", self.id))
