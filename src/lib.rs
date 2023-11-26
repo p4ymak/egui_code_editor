@@ -227,7 +227,11 @@ impl CodeEditor {
                 .join("\n");
             let rows_before = *highlight_line - 1;
             let rows_highlight = 1;
-            let rows_after = self.rows - *highlight_line;
+            let rows_after = if *highlight_line <= total {
+                total - *highlight_line
+            } else {
+                0
+            };
             ui.vertical(|ui| {
                 if rows_before > 0 {
                     egui::TextEdit::multiline(&mut counter_before)
