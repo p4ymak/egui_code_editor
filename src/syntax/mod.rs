@@ -1,9 +1,9 @@
 #![allow(dead_code)]
+pub mod asm;
 pub mod lua;
 pub mod rust;
 pub mod shell;
 pub mod sql;
-pub mod asm;
 
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};

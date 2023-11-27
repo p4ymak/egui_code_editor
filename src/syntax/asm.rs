@@ -106,7 +106,7 @@ impl Syntax {
                 "psignw",
                 "packusdw",
                 "test",
-                "/ib",
+                "ib",
                 "scas",
                 "kaddd",
                 "vmovhps",
@@ -118,7 +118,7 @@ impl Syntax {
                 "fldln2",
                 "hlt",
                 "rol",
-                "getsec[capabilities]",
+                "getsec",
                 "vpcmpeqq",
                 "pmullw",
                 "emms",
@@ -146,7 +146,6 @@ impl Syntax {
                 "vpsubw",
                 "cvtpd2dq",
                 "or",
-                "1",
                 "rsqrtss",
                 "vpsubq",
                 "vpshldvd",
@@ -274,7 +273,6 @@ impl Syntax {
                 "pmaxsd",
                 "vrsqrt14ps",
                 "cvttps2dq",
-                "getsec[sexit]",
                 "vpsignb",
                 "vmovhpd",
                 "vpexpandd",
@@ -682,7 +680,6 @@ impl Syntax {
                 "xlatb",
                 "vcvtsi2sd",
                 "vpackssdw",
-                "getsec[senter]",
                 "kandb",
                 "shrx",
                 "vpabsq",
@@ -762,7 +759,6 @@ impl Syntax {
                 "kmovd",
                 "vfmadd213pd",
                 "vpaddsb",
-                "64,",
                 "vgatherqpd",
                 "bndcu",
                 "vpsubusw",
@@ -832,7 +828,6 @@ impl Syntax {
                 "cwde",
                 "ibvpermilps",
                 "jnbe",
-                "getsec[smctrl]",
                 "cvtsd2ss",
                 "vfnmsub231ps",
                 "adcx",
@@ -893,7 +888,6 @@ impl Syntax {
                 "xchg",
                 "iretd",
                 "stosd",
-                "getsec[enteraccs]",
                 "pmovzxwd",
                 "vpmuldq",
                 "vpexpandb",
@@ -918,7 +912,6 @@ impl Syntax {
                 "fst",
                 "maxss",
                 "orps",
-                "getsec[parameters]",
                 "xlat",
                 "addsd",
                 "punpcklbw",
@@ -951,7 +944,6 @@ impl Syntax {
                 "jna",
                 "cmovnz",
                 "divps",
-                "getsec[exitac]",
                 "hsubps",
                 "jmp",
                 "ucomisd",
@@ -997,7 +989,6 @@ impl Syntax {
                 "vpunpckhbw",
                 "vcvttpd2uqq",
                 "vpmovw2m",
-                "getsec[wakeup]",
                 "vfmadd132sd",
                 "vfnmsub132ss",
                 "jle",
@@ -1167,30 +1158,25 @@ impl Syntax {
                 "setno",
                 "vpermb",
             ]),
-            types: HashSet::from([
-                // 64-bit registers
-                "RAX", "RBX", "RCX", "RDX", "RSI", "RDI", "RBP", "RSP",
-                "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15",
-                // 32-bit registers
-                "EAX", "EBX", "ECX", "EDX", "ESI", "EDI", "EBP", "ESP",
-                "R8D", "R9D", "R10D", "R11D", "R12D", "R13D", "R14D", "R15D",
-                // 16-bit registers
-                "AX", "BX", "CX", "DX", "SI", "DI", "BP", "SP",
-                "R8W", "R9W", "R10W", "R11W", "R12W", "R13W", "R14W", "R15W",
+            types: HashSet::from(["ptr", "byte", "word", "dword", "qword"]),
+            special: HashSet::from([
+                "RAX", "RBX", "RCX", "RDX", "RSI", "RDI", "RBP", "RSP", "R8", "R9", "R10", "R11",
+                "R12", "R13", "R14", "R15", // 64-bit registers
+                "EAX", "EBX", "ECX", "EDX", "ESI", "EDI", "EBP", "ESP", "R8D", "R9D", "R10D",
+                "R11D", "R12D", "R13D", "R14D", "R15D", // 32-bit registers
+                "AX", "BX", "CX", "DX", "SI", "DI", "BP", "SP", "R8W", "R9W", "R10W", "R11W",
+                "R12W", "R13W", "R14W", "R15W", // 16-bit registers
+                "AH", "BH", "CH", "DH", "AL", "BL", "CL", "DL", "SIL", "DIL", "BPL", "SPL", "R8B",
+                "R9B", "R10B", "R11B", "R12B", "R13B", "R14B", "R15B",
                 // 8-bit registers
-                "AH", "BH", "CH", "DH", "AL", "BL", "CL", "DL", "SIL", "DIL", "BPL", "SPL",
-                "R8B", "R9B", "R10B", "R11B", "R12B", "R13B", "R14B", "R15B",
-                // XMM
-                "XMM0", "XMM1", "XMM2", "XMM3", "XMM4", "XMM5", "XMM6", "XMM7",
-                "XMM8", "XMM9", "XMM10", "XMM11", "XMM12", "XMM13", "XMM14", "XMM15",
-                // YMM
-                "YMM0", "YMM1", "YMM2", "YMM3", "YMM4", "YMM5", "YMM6", "YMM7",
-                "YMM8", "YMM9", "YMM10", "YMM11", "YMM12", "YMM13", "YMM14", "YMM15",
+                "XMM0", "XMM1", "XMM2", "XMM3", "XMM4", "XMM5", "XMM6", "XMM7", "XMM8", "XMM9",
+                "XMM10", "XMM11", "XMM12", "XMM13", "XMM14", "XMM15", // XMM
+                "YMM0", "YMM1", "YMM2", "YMM3", "YMM4", "YMM5", "YMM6", "YMM7", "YMM8", "YMM9",
+                "YMM10", "YMM11", "YMM12", "YMM13", "YMM14", "YMM15", // YMM
+                "ZMM0", "ZMM1", "ZMM2", "ZMM3", "ZMM4", "ZMM5", "ZMM6", "ZMM7", "ZMM8", "ZMM9",
+                "ZMM10", "ZMM11", "ZMM12", "ZMM13", "ZMM14", "ZMM15",
                 // ZMM
-                "ZMM0", "ZMM1", "ZMM2", "ZMM3", "ZMM4", "ZMM5", "ZMM6", "ZMM7",
-                "ZMM8", "ZMM9", "ZMM10", "ZMM11", "ZMM12", "ZMM13", "ZMM14", "ZMM15",
             ]),
-            special: HashSet::from(["[", "]", ":", "ptr", "byte", "word", "dword", "qword"]),
         }
     }
 }
