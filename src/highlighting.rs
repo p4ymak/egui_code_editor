@@ -20,6 +20,7 @@ impl Highlighter {
     pub fn highlight(&self, editor: &CodeEditor, text: &str) -> LayoutJob {
         let mut job = LayoutJob::default();
         let mut text = text;
+
         while !text.is_empty() {
             // Comment
             if text.starts_with(editor.syntax.comment()) {
@@ -39,9 +40,33 @@ impl Highlighter {
             }
             // Numeric
             else if text.starts_with(char::is_numeric) {
-                let end = text[1..]
-                    .find(|c: char| !c.is_numeric())
-                    .map_or_else(|| text.len(), |i| i + 1);
+                let next_char = text[1..2].chars().nth(0);
+                let end: usize;
+
+                // hexadecimal
+                if next_char == Some('x') {
+                    end = text[2..]
+                        .find(|c: char| !c.is_ascii_hexdigit())
+                        .map_or_else(|| text.len(), |i| i + 2);
+                }
+                // octaldecimal
+                else if next_char == Some('o') {
+                    end = text[2..]
+                        .find(|c: char| matches!(c, '0'..='7'))
+                        .map_or_else(|| text.len(), |i| i + 2);
+                }
+                // binary
+                else if next_char == Some('b') {
+                    end = text[2..]
+                        .find(|c: char| c == '1' || c == '0')
+                        .map_or_else(|| text.len(), |i| i + 2);
+                }
+                // decimal
+                else {
+                    end = text[1..]
+                        .find(|c: char| !c.is_numeric())
+                        .map_or_else(|| text.len(), |i| i + 1);
+                }
                 let word = &text[..end];
                 job.append(word, 0.0, editor.format(TokenType::Numeric));
                 text = &text[end..];
