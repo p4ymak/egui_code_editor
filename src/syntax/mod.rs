@@ -46,6 +46,10 @@ impl Hash for Syntax {
 }
 impl Syntax {
     #[must_use]
+    pub fn language(&self) -> &str {
+        self.language
+    }
+    #[must_use]
     pub fn comment(&self) -> &str {
         self.comment
     }

@@ -5,7 +5,7 @@ impl ColorTheme {
     ///  Modified by p4ymak <https://github.com/p4ymak>
     pub const SONOKAI: ColorTheme = ColorTheme {
         name: "Sonokai",
-        dark: false,
+        dark: true,
         bg: "#2c2e34",          // bg0
         cursor: "#76cce0",      // blue
         selection: "#444852",   // bg5

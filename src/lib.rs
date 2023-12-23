@@ -19,7 +19,6 @@
 mod highlighting;
 mod syntax;
 mod themes;
-
 use egui::widgets::text_edit::TextEditOutput;
 use highlighting::highlight;
 use std::hash::{Hash, Hasher};

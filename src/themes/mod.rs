@@ -58,6 +58,14 @@ impl Default for ColorTheme {
 }
 impl ColorTheme {
     #[must_use]
+    pub fn name(&self) -> &str {
+        self.name
+    }
+    #[must_use]
+    pub fn is_dark(&self) -> bool {
+        self.dark
+    }
+    #[must_use]
     pub fn bg(&self) -> Color32 {
         color_from_hex(self.bg).unwrap_or(ERROR_COLOR)
     }
