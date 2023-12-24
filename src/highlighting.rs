@@ -139,7 +139,6 @@ impl Highlighter {
                     self.drain_push(c, editor, job, TokenType::Str(c));
                 }
                 _ => {
-                    // FIXME if starts as multiline but continues as singleline comment
                     if !(editor.syntax.comment.starts_with(&self.buffer)
                         || editor.syntax.comment_multiline[0].starts_with(&self.buffer))
                     {

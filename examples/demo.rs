@@ -14,14 +14,7 @@ const THEMES: [ColorTheme; 8] = [
     ColorTheme::SONOKAI,
 ];
 
-const SYNTAXES: [SyntaxDemo; 5] = [
-    SyntaxDemo::new(
-        "Assembly",
-        r#"ADD R1,R1,R3 ; R1 = R1 + R3
-ADD R1,R1, 3 ; R1 = R1 + 3
-LD R6,NUMBER ; R6 = Mem(Address of Number)
-BRz LOOP ; if previous zero go to address LOOP"#,
-    ),
+const SYNTAXES: [SyntaxDemo; 4] = [
     SyntaxDemo::new(
         "Lua",
         r#"-- Binary Search
@@ -111,7 +104,7 @@ fn main() -> Result<(), eframe::Error> {
     };
 
     eframe::run_native(
-        "Egui Code Editor",
+        "Egui Code Editor Demo",
         options,
         Box::new(|cc| Box::new(CodeEditorDemo::new(cc))),
     )
@@ -126,7 +119,7 @@ struct CodeEditorDemo {
 }
 impl CodeEditorDemo {
     fn new(_cc: &CreationContext) -> Self {
-        let rust = SYNTAXES[2];
+        let rust = SYNTAXES[1];
         CodeEditorDemo {
             code: rust.example.to_string(),
             theme: ColorTheme::GRUVBOX,
