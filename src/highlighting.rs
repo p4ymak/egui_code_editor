@@ -2,7 +2,7 @@ use super::syntax::TokenType;
 use super::CodeEditor;
 use egui::text::LayoutJob;
 
-const SEPARATORS: [char; 2] = ['_', '-'];
+const SEPARATORS: [char; 1] = ['_'];
 const QUOTES: [char; 3] = ['\'', '"', '`'];
 
 pub type HighlightCache = egui::util::cache::FrameCache<LayoutJob, Highlighter>;
@@ -21,9 +21,13 @@ impl egui::util::cache::ComputerMut<(&CodeEditor, &str), LayoutJob> for Highligh
     }
 }
 impl Highlighter {
-    fn first(&mut self, c: char, editor: &CodeEditor) {
+    fn first(&mut self, c: char, editor: &CodeEditor, job: &mut LayoutJob) {
         self.buffer.push(c);
         self.ty = match c {
+            c if c.is_whitespace() => {
+                self.drain(editor, job, self.ty);
+                TokenType::Whitespace
+            }
             c if c.is_alphabetic() || SEPARATORS.contains(&c) => TokenType::Literal,
             c if c.is_numeric() => TokenType::Numeric,
             c if editor.syntax.comment == c.to_string().as_str() => TokenType::Comment(false),
@@ -116,12 +120,15 @@ impl Highlighter {
                             self.buffer.push(c);
                         }
                         _ => {
-                            self.first(c, editor);
+                            self.first(c, editor, job);
                         }
                     }
                 }
             }
             TokenType::Punctuation => match c {
+                c if c.is_whitespace() => {
+                    self.push_drain(c, editor, job, TokenType::Whitespace);
+                }
                 c if c.is_alphabetic() || SEPARATORS.contains(&c) => {
                     self.drain_push(c, editor, job, TokenType::Literal);
                 }
@@ -149,14 +156,14 @@ impl Highlighter {
                 }
             }
             TokenType::Whitespace => {
-                self.first(c, editor);
+                self.first(c, editor, job);
             }
             // Keyword, Type, Special
             reserved => {
                 if !(c.is_alphanumeric() || SEPARATORS.contains(&c)) {
                     self.ty = reserved;
                     self.drain(editor, job, self.ty);
-                    self.first(c, editor);
+                    self.first(c, editor, job);
                 } else {
                     self.buffer.push(c);
                     self.ty = TokenType::Literal;
