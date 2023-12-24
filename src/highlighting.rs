@@ -39,6 +39,8 @@ impl Highlighter {
         };
     }
     fn drain(&mut self, editor: &CodeEditor, job: &mut LayoutJob, ty: TokenType) {
+        println!("{} {:?}", self.buffer, self.ty);
+
         editor.append(job, &self.buffer, self.ty);
         self.buffer.clear();
         self.ty = ty;
@@ -139,13 +141,21 @@ impl Highlighter {
                     self.drain_push(c, editor, job, TokenType::Str(c));
                 }
                 _ => {
-                    self.buffer.push(c);
-                    if self.buffer == editor.syntax.comment {
-                        self.ty = TokenType::Comment(false);
-                    } else if self.buffer == editor.syntax.comment_multiline[0] {
-                        self.ty = TokenType::Comment(true);
+                    // FIXME if starts as multiline but continues as singleline comment
+                    if !(editor.syntax.comment.starts_with(&self.buffer)
+                        || editor.syntax.comment_multiline[0].starts_with(&self.buffer))
+                    {
+                        self.drain_push(c, editor, job, self.ty);
                     } else {
-                        self.drain(editor, job, self.ty);
+                        self.buffer.push(c);
+                        if self.buffer.starts_with(editor.syntax.comment) {
+                            self.ty = TokenType::Comment(false);
+                        } else if self.buffer.starts_with(editor.syntax.comment_multiline[0]) {
+                            self.ty = TokenType::Comment(true);
+                        } else {
+                            println!("punctuation else");
+                            self.drain(editor, job, TokenType::Punctuation);
+                        }
                     }
                 }
             },
