@@ -8,10 +8,12 @@ pub mod sql;
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 
+type Multiline = bool;
+
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum TokenType {
-    Comment,
+    Comment(Multiline),
     Function,
     Keyword,
     Literal,

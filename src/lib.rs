@@ -190,7 +190,7 @@ impl CodeEditor {
                 string.to_string(),
                 egui::TextFormat::simple(
                     egui::FontId::monospace(self.fontsize),
-                    self.theme.type_color(TokenType::Comment),
+                    self.theme.type_color(TokenType::Comment(true)),
                 ),
             );
             ui.fonts(|f| f.layout_job(layout_job))

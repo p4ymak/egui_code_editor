@@ -15,8 +15,27 @@ const THEMES: [ColorTheme; 8] = [
 ];
 
 const SYNTAXES: [SyntaxDemo; 5] = [
-    SyntaxDemo::new("Assembly", ""),
-    SyntaxDemo::new("Lua", ""),
+    SyntaxDemo::new(
+        "Assembly",
+        r#"ADD R1,R1,R3 ; R1 = R1 + R3
+ADD R1,R1, 3 ; R1 = R1 + 3
+LD R6,NUMBER ; R6 = Mem(Address of Number)
+BRz LOOP ; if previous zero go to address LOOP"#,
+    ),
+    SyntaxDemo::new(
+        "Lua",
+        r#"-- Binary Search
+function binarySearch(list, value)
+    local function search(low, high)
+        if low > high then return false end
+        local mid = math.floor((low+high)/2)
+        if list[mid] > value then return search(low,mid-1) end
+        if list[mid] < value then return search(mid+1,high) end
+        return mid
+    end
+    return search(1,#list)
+end"#,
+    ),
     SyntaxDemo::new(
         "Rust",
         r#"// Code Editor
@@ -30,8 +49,29 @@ CodeEditor::default()
     .vscroll(true)
     .show(ui, &mut self.code);"#,
     ),
-    SyntaxDemo::new("Shell", ""),
-    SyntaxDemo::new("SQL", ""),
+    SyntaxDemo::new(
+        "Shell",
+        r#"#!/bin/bash
+user=p4ymak
+if grep $user /etc/passwd
+then
+echo "The user $user Exists"
+fi"#,
+    ),
+    SyntaxDemo::new(
+        "SQL",
+        r#"select now(); -- what time it is?
+WITH employee_ranking AS (
+  SELECT 
+    employee_id as real, 
+    last_name, 
+    first_name, 
+    salary, 
+    dept_id
+    RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) as ranking
+  FROM employee
+)"#,
+    ),
 ];
 
 #[derive(Clone, Copy)]

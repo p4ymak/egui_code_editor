@@ -92,7 +92,7 @@ impl ColorTheme {
     #[must_use]
     pub const fn type_color_str(&self, ty: TokenType) -> &'static str {
         match ty {
-            TokenType::Comment => self.comments,
+            TokenType::Comment(_) => self.comments,
             TokenType::Function => self.functions,
             TokenType::Keyword => self.keywords,
             TokenType::Literal => self.literals,
@@ -108,7 +108,7 @@ impl ColorTheme {
     #[must_use]
     pub fn type_color(&self, ty: TokenType) -> Color32 {
         match ty {
-            TokenType::Comment => color_from_hex(self.comments),
+            TokenType::Comment(_) => color_from_hex(self.comments),
             TokenType::Function => color_from_hex(self.functions),
             TokenType::Keyword => color_from_hex(self.keywords),
             TokenType::Literal => color_from_hex(self.literals),
