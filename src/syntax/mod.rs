@@ -8,7 +8,7 @@ pub mod sql;
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum TokenType {
     Comment,
@@ -18,8 +18,9 @@ pub enum TokenType {
     Numeric,
     Punctuation,
     Special,
-    Str,
+    Str(char),
     Type,
+    #[default]
     Whitespace,
 }
 

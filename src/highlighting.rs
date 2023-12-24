@@ -2,116 +2,178 @@ use super::syntax::TokenType;
 use super::CodeEditor;
 use egui::text::LayoutJob;
 
+const SEPARATORS: [char; 2] = ['_', '-'];
+const QUOTES: [char; 3] = ['\'', '"', '`'];
+
+pub type HighlightCache = egui::util::cache::FrameCache<LayoutJob, Highlighter>;
 pub fn highlight(ctx: &egui::Context, cache: &CodeEditor, text: &str) -> LayoutJob {
     ctx.memory_mut(|mem| mem.caches.cache::<HighlightCache>().get((cache, text)))
 }
 
 #[derive(Default)]
-pub struct Highlighter {}
+pub struct Highlighter {
+    ty: TokenType,
+    buffer: String,
+}
 impl egui::util::cache::ComputerMut<(&CodeEditor, &str), LayoutJob> for Highlighter {
     fn compute(&mut self, (cache, text): (&CodeEditor, &str)) -> LayoutJob {
         self.highlight(cache, text)
     }
 }
-
-pub type HighlightCache = egui::util::cache::FrameCache<LayoutJob, Highlighter>;
-
 impl Highlighter {
-    pub fn highlight(&self, editor: &CodeEditor, text: &str) -> LayoutJob {
+    fn first(&mut self, c: char) {
+        self.buffer.push(c);
+        self.ty = match c {
+            c if c.is_alphabetic() || SEPARATORS.contains(&c) => TokenType::Literal,
+            c if c.is_numeric() => TokenType::Numeric,
+            c if QUOTES.contains(&c) => TokenType::Str(c),
+            _ => TokenType::Punctuation,
+        };
+    }
+    fn drain(&mut self, editor: &CodeEditor, job: &mut LayoutJob) {
+        editor.append(job, &self.buffer, self.ty);
+        *self = Highlighter::default();
+    }
+    pub fn highlight(&mut self, editor: &CodeEditor, text: &str) -> LayoutJob {
+        *self = Highlighter::default();
         let mut job = LayoutJob::default();
-        let mut text = text;
-        while !text.is_empty() {
-            // Comment
-            if text.starts_with(editor.syntax.comment()) {
-                let end = text.find('\n').unwrap_or(text.len());
-                job.append(&text[..end], 0.0, editor.format(TokenType::Comment));
-                text = &text[end..];
+        for c in text.chars() {
+            self.automata(c, editor, &mut job);
+        }
+        self.drain(editor, &mut job);
+        job
+    }
+    fn automata(&mut self, c: char, editor: &CodeEditor, job: &mut LayoutJob) {
+        match self.ty {
+            TokenType::Comment => {
+                self.buffer.push(c);
+                if self.buffer.starts_with(editor.syntax.comment) {
+                    if c == '\n' {
+                        self.drain(editor, job);
+                        self.ty = TokenType::Whitespace;
+                    }
+                } else if self.buffer.ends_with(editor.syntax.comment_multiline[1]) {
+                    self.drain(editor, job);
+                    self.ty = TokenType::Whitespace;
+                }
             }
-            // Multiline Comment
-            else if text.starts_with(editor.syntax.comment_multiline[0]) {
-                let comment_end = editor.syntax.comment_multiline[1];
-                let end = text[1..]
-                    .find(comment_end)
-                    .map(|i| i + 1 + comment_end.len())
-                    .unwrap_or(text.len());
-                job.append(&text[..end], 0.0, editor.format(TokenType::Comment));
-                text = &text[end..];
-            }
-            // Numeric
-            else if text.starts_with(char::is_numeric) {
-                let end = text[1..]
-                    .find(|c: char| !c.is_numeric())
-                    .map_or_else(|| text.len(), |i| i + 1);
-                let word = &text[..end];
-                job.append(word, 0.0, editor.format(TokenType::Numeric));
-                text = &text[end..];
-            }
-            // String
-            else if text.starts_with('\"') {
-                let end = text[1..]
-                    .find('\"')
-                    .map(|i| i + 2)
-                    .or_else(|| text.find('\n'))
-                    .unwrap_or(text.len());
-                job.append(&text[..end], 0.0, editor.format(TokenType::Str));
-                text = &text[end..];
-            } else if text.starts_with('\'') {
-                let end = text[1..]
-                    .find('\'')
-                    .map(|i| i + 2)
-                    .or_else(|| text.find('\n'))
-                    .unwrap_or(text.len());
-                job.append(&text[..end], 0.0, editor.format(TokenType::Str));
-                text = &text[end..];
-            } else if text.starts_with('`') {
-                let end = text[1..]
-                    .find('`')
-                    .map(|i| i + 2)
-                    .or_else(|| text.find('\n'))
-                    .unwrap_or(text.len());
-                job.append(&text[..end], 0.0, editor.format(TokenType::Str));
-                text = &text[end..];
-            }
-            // Keyword | Type | Literal | Function
-            else if text.starts_with(|c: char| c.is_ascii_alphanumeric() || c == '_') {
-                let end = text[1..]
-                    .find(|c: char| !(c.is_ascii_alphanumeric() || c == '_'))
-                    .map_or_else(|| text.len(), |i| i + 1);
-                let word = &text[..end];
+            TokenType::Literal => match c {
+                c if c.is_whitespace() => {
+                    self.buffer.push(c);
+                    self.drain(editor, job);
+                    self.ty = TokenType::Whitespace;
+                }
+                c if c == '(' => {
+                    self.ty = TokenType::Function;
+                    self.drain(editor, job);
+                    self.ty = TokenType::Punctuation;
+                    self.buffer.push(c);
+                    self.drain(editor, job);
+                    self.ty = TokenType::Whitespace;
+                }
+                c if !c.is_alphanumeric() && !SEPARATORS.contains(&c) => {
+                    self.drain(editor, job);
+                    self.buffer.push(c);
 
-                let tt = if editor.syntax.is_keyword(word) {
-                    TokenType::Keyword
-                } else if editor.syntax.is_type(word) {
-                    TokenType::Type
-                } else if editor.syntax.is_special(word) {
-                    TokenType::Special
-                } else if let Some('(') = text.chars().nth(end) {
-                    TokenType::Function
+                    self.ty = if QUOTES.contains(&c) {
+                        TokenType::Str(c)
+                    } else {
+                        TokenType::Punctuation
+                    };
+                }
+                _ => {
+                    self.buffer.push(c);
+                    self.ty = {
+                        if self.buffer.starts_with(editor.syntax.comment)
+                            || self.buffer.starts_with(editor.syntax.comment_multiline[0])
+                        {
+                            TokenType::Comment
+                        } else if editor.syntax.is_keyword(&self.buffer) {
+                            TokenType::Keyword
+                        } else if editor.syntax.is_type(&self.buffer) {
+                            TokenType::Type
+                        } else if editor.syntax.is_special(&self.buffer) {
+                            TokenType::Special
+                        } else {
+                            TokenType::Literal
+                        }
+                    };
+                }
+            },
+            TokenType::Numeric => {
+                if c.is_numeric() {
+                    self.buffer.push(c);
                 } else {
-                    TokenType::Literal
-                };
+                    self.drain(editor, job);
+                    match c {
+                        c if c.is_alphabetic() => {
+                            self.buffer.push(c);
+                        }
+                        _ => {
+                            self.first(c);
+                        }
+                    }
+                }
+            }
+            TokenType::Punctuation => match c {
+                c if c.is_alphabetic() || SEPARATORS.contains(&c) => {
+                    self.drain(editor, job);
+                    self.buffer.push(c);
+                    self.ty = TokenType::Literal;
+                }
+                c if c.is_numeric() => {
+                    self.drain(editor, job);
+                    self.buffer.push(c);
+                    self.ty = TokenType::Numeric;
+                }
+                c if QUOTES.contains(&c) => {
+                    self.drain(editor, job);
+                    self.buffer.push(c);
+                    self.ty = TokenType::Str(c);
+                }
+                _ => {
+                    self.buffer.push(c);
 
-                job.append(word, 0.0, editor.format(tt));
-                text = &text[end..];
+                    if editor.syntax.comment.starts_with(&self.buffer)
+                        || editor.syntax.comment_multiline[0].starts_with(&self.buffer)
+                    {
+                        if self.buffer == editor.syntax.comment
+                            || self.buffer == editor.syntax.comment_multiline[0]
+                        {
+                            self.ty = TokenType::Comment;
+                        }
+                    } else {
+                        self.drain(editor, job);
+                    }
+                }
+            },
+            TokenType::Str(q) => {
+                self.buffer.push(c);
+                if c == q {
+                    self.drain(editor, job);
+                    self.ty = TokenType::Whitespace;
+                }
             }
-            // Whitespace
-            else if text.starts_with(|c: char| c.is_ascii_whitespace()) {
-                let end = text[1..]
-                    .find(|c: char| !c.is_ascii_whitespace())
-                    .map_or_else(|| text.len(), |i| i + 1);
-                job.append(&text[..end], 0.0, editor.format(TokenType::Whitespace));
-                text = &text[end..];
+            TokenType::Whitespace => {
+                self.first(c);
             }
-            // Punctuation
-            else {
-                let mut it = text.char_indices();
-                it.next();
-                let end = it.next().map_or(text.len(), |(idx, _chr)| idx);
-                job.append(&text[..end], 0.0, editor.format(TokenType::Punctuation));
-                text = &text[end..];
+            // Keyword, Type, Special
+            reserved => {
+                if !(c.is_alphanumeric() || SEPARATORS.contains(&c)) {
+                    self.ty = reserved;
+                    self.drain(editor, job);
+                    self.first(c);
+                } else {
+                    self.buffer.push(c);
+                    self.ty = TokenType::Literal;
+                }
             }
         }
+    }
+}
 
-        job
+impl CodeEditor {
+    fn append(&self, job: &mut LayoutJob, text: &str, ty: TokenType) {
+        job.append(text, 0.0, self.format(ty));
     }
 }

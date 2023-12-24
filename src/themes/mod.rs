@@ -99,7 +99,7 @@ impl ColorTheme {
             TokenType::Numeric => self.numerics,
             TokenType::Punctuation => self.punctuation,
             TokenType::Special => self.special,
-            TokenType::Str => self.strs,
+            TokenType::Str(_) => self.strs,
             TokenType::Type => self.types,
             TokenType::Whitespace => self.bg,
         }
@@ -115,7 +115,7 @@ impl ColorTheme {
             TokenType::Numeric => color_from_hex(self.numerics),
             TokenType::Punctuation => color_from_hex(self.punctuation),
             TokenType::Special => color_from_hex(self.special),
-            TokenType::Str => color_from_hex(self.strs),
+            TokenType::Str(_) => color_from_hex(self.strs),
             TokenType::Type => color_from_hex(self.types),
             TokenType::Whitespace => color_from_hex(self.bg),
         }
