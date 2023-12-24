@@ -38,20 +38,24 @@ impl Highlighter {
             _ => TokenType::Punctuation,
         };
     }
+
     fn drain(&mut self, editor: &CodeEditor, job: &mut LayoutJob, ty: TokenType) {
         editor.append(job, &self.buffer, self.ty);
         self.buffer.clear();
         self.ty = ty;
     }
+
     fn push_drain(&mut self, c: char, editor: &CodeEditor, job: &mut LayoutJob, ty: TokenType) {
         self.buffer.push(c);
         self.drain(editor, job, ty);
     }
+
     fn drain_push(&mut self, c: char, editor: &CodeEditor, job: &mut LayoutJob, ty: TokenType) {
         self.drain(editor, job, self.ty);
         self.buffer.push(c);
         self.ty = ty;
     }
+
     pub fn highlight(&mut self, editor: &CodeEditor, text: &str) -> LayoutJob {
         *self = Highlighter::default();
         let mut job = LayoutJob::default();
@@ -61,6 +65,7 @@ impl Highlighter {
         self.drain(editor, &mut job, TokenType::Whitespace);
         job
     }
+
     fn automata(&mut self, c: char, editor: &CodeEditor, job: &mut LayoutJob) {
         match self.ty {
             TokenType::Comment(multiline) => {
@@ -158,8 +163,9 @@ impl Highlighter {
                 }
             },
             TokenType::Str(q) => {
+                let control = self.buffer.ends_with('\\');
                 self.buffer.push(c);
-                if c == q {
+                if c == q && !control {
                     self.drain(editor, job, TokenType::Whitespace);
                 }
             }
