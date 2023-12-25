@@ -1,5 +1,5 @@
 use super::Syntax;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 impl Syntax {
     #[must_use]
@@ -9,14 +9,14 @@ impl Syntax {
             case_sensitive: true,
             comment: "//",
             comment_multiline: ["/*", "*/"],
-            keywords: HashSet::from([
+            keywords: BTreeSet::from([
                 "as", "break", "const", "continue", "crate", "else", "enum", "extern", "fn", "for",
                 "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut", "pub", "ref",
                 "return", "self", "struct", "super", "trait", "type", "use", "where", "while",
                 "async", "await", "abstract", "become", "box", "do", "final", "macro", "override",
                 "priv", "typeof", "unsized", "virtual", "yield", "try", "unsafe", "dyn",
             ]),
-            types: HashSet::from([
+            types: BTreeSet::from([
                 "Option",
                 "Result",
                 "Error",
@@ -43,8 +43,8 @@ impl Syntax {
                 "String",
                 // STD Collections
                 "Vec",
-                "HashMap",
-                "HashSet",
+                "BTreeMap",
+                "BTreeSet",
                 "BTreeMap",
                 "BTreeSet",
                 "VecDeque",
@@ -82,7 +82,7 @@ impl Syntax {
                 "WaitTimeoutResult",
                 "Weak",
             ]),
-            special: HashSet::from(["Self", "static", "true", "false"]),
+            special: BTreeSet::from(["Self", "static", "true", "false"]),
         }
     }
 }

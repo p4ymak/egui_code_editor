@@ -1,5 +1,5 @@
 use super::Syntax;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 impl Syntax {
     #[must_use]
@@ -9,7 +9,7 @@ impl Syntax {
             case_sensitive: false,
             comment: "--",
             comment_multiline: ["/*", "*/"],
-            keywords: HashSet::from([
+            keywords: BTreeSet::from([
                 "ADD",
                 "ALL",
                 "ALTER",
@@ -70,7 +70,7 @@ impl Syntax {
                 "WHERE",
                 "WITH",
             ]),
-            types: HashSet::from([
+            types: BTreeSet::from([
                 "BOOL",
                 "INTEGER",
                 "SMALLINT",
@@ -131,7 +131,7 @@ impl Syntax {
                 "SET",
                 "DATABASE",
             ]),
-            special: HashSet::from(["PUBLIC"]),
+            special: BTreeSet::from(["PUBLIC"]),
         }
     }
 }

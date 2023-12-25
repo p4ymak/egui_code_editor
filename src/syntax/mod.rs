@@ -5,7 +5,7 @@ pub mod rust;
 pub mod shell;
 pub mod sql;
 
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 use std::hash::{Hash, Hasher};
 
 type Multiline = bool;
@@ -33,9 +33,9 @@ pub struct Syntax {
     pub case_sensitive: bool,
     pub comment: &'static str,
     pub comment_multiline: [&'static str; 2],
-    pub keywords: HashSet<&'static str>,
-    pub types: HashSet<&'static str>,
-    pub special: HashSet<&'static str>,
+    pub keywords: BTreeSet<&'static str>,
+    pub types: BTreeSet<&'static str>,
+    pub special: BTreeSet<&'static str>,
 }
 impl Default for Syntax {
     fn default() -> Self {
@@ -90,9 +90,9 @@ impl Syntax {
             case_sensitive: false,
             comment,
             comment_multiline: [comment; 2],
-            keywords: HashSet::new(),
-            types: HashSet::new(),
-            special: HashSet::new(),
+            keywords: BTreeSet::new(),
+            types: BTreeSet::new(),
+            special: BTreeSet::new(),
         }
     }
 }

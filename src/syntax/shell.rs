@@ -1,5 +1,5 @@
 use super::Syntax;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 impl Syntax {
     #[must_use]
@@ -8,13 +8,13 @@ impl Syntax {
             language: "Shell",
             case_sensitive: true,
             comment: "#",
-            keywords: HashSet::from([
+            keywords: BTreeSet::from([
                 "echo", "read", "set", "unset", "readonly", "shift", "export", "if", "fi", "else",
                 "while", "do", "done", "for", "until", "case", "esac", "break", "continue", "exit",
                 "return", "trap", "wait", "eval", "exec", "ulimit", "umask",
             ]),
             comment_multiline: [": '", "'"],
-            types: HashSet::from([
+            types: BTreeSet::from([
                 "ENV",
                 "HOME",
                 "IFS",
@@ -32,7 +32,7 @@ impl Syntax {
                 "PS4",
                 "PWD",
             ]),
-            special: HashSet::from([
+            special: BTreeSet::from([
                 "alias", "bg", "cd", "command", "false", "fc", "fg", "getopts", "jobs", "kill",
                 "newgrp", "pwd", "read", "true", "umask", "unalias", "wait",
             ]),

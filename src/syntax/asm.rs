@@ -1,5 +1,5 @@
 use super::Syntax;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 impl Syntax {
     #[must_use]
@@ -9,7 +9,7 @@ impl Syntax {
             case_sensitive: false,
             comment: ";",
             comment_multiline: ["/*", "*/"],
-            keywords: HashSet::from([
+            keywords: BTreeSet::from([
                 "vaddpd",
                 "divsd",
                 "vrcp14ps",
@@ -1158,8 +1158,8 @@ impl Syntax {
                 "setno",
                 "vpermb",
             ]),
-            types: HashSet::from(["ptr", "byte", "word", "dword", "qword"]),
-            special: HashSet::from([
+            types: BTreeSet::from(["ptr", "byte", "word", "dword", "qword"]),
+            special: BTreeSet::from([
                 "RAX", "RBX", "RCX", "RDX", "RSI", "RDI", "RBP", "RSP", "R8", "R9", "R10", "R11",
                 "R12", "R13", "R14", "R15", // 64-bit registers
                 "EAX", "EBX", "ECX", "EDX", "ESI", "EDI", "EBP", "ESP", "R8D", "R9D", "R10D",

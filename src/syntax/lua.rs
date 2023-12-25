@@ -1,5 +1,5 @@
 use super::Syntax;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 impl Syntax {
     #[must_use]
@@ -9,20 +9,14 @@ impl Syntax {
             case_sensitive: true,
             comment: "--",
             comment_multiline: ["--[[", "]]"],
-            keywords: HashSet::from([
-                "and", "break", "do", "else", "elseif", "end", "for", "function", "if",
-                "in", "local","not", "or", "repeat", "return", "then", "until",
-                "while",
+            keywords: BTreeSet::from([
+                "and", "break", "do", "else", "elseif", "end", "for", "function", "if", "in",
+                "local", "not", "or", "repeat", "return", "then", "until", "while",
             ]),
-            types: HashSet::from([
-                "boolean", "number", "string", "function", "userdata", "thread",
-                "table",
+            types: BTreeSet::from([
+                "boolean", "number", "string", "function", "userdata", "thread", "table",
             ]),
-            special: HashSet::from([
-                "false",
-                "nil",
-                "true",
-            ]),
+            special: BTreeSet::from(["false", "nil", "true"]),
         }
     }
 }
