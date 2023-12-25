@@ -28,6 +28,9 @@ impl Highlighter {
                 self.drain(editor, job, self.ty);
                 TokenType::Whitespace
             }
+            c if editor.syntax.is_keyword(c.to_string().as_str()) => TokenType::Keyword,
+            c if editor.syntax.is_type(c.to_string().as_str()) => TokenType::Type,
+            c if editor.syntax.is_special(c.to_string().as_str()) => TokenType::Special,
             c if c.is_alphabetic() || SEPARATORS.contains(&c) => TokenType::Literal,
             c if c.is_numeric() => TokenType::Numeric,
             c if editor.syntax.comment == c.to_string().as_str() => TokenType::Comment(false),
@@ -134,11 +137,9 @@ impl Highlighter {
                 c if c.is_whitespace() => {
                     self.push_drain(c, editor, job, TokenType::Whitespace);
                 }
-                c if c.is_alphabetic() || SEPARATORS.contains(&c) => {
-                    self.drain_push(c, editor, job, TokenType::Literal);
-                }
-                c if c.is_numeric() => {
-                    self.drain_push(c, editor, job, TokenType::Numeric);
+                c if c.is_alphanumeric() || SEPARATORS.contains(&c) => {
+                    self.drain(editor, job, self.ty);
+                    self.first(c, editor, job);
                 }
                 c if QUOTES.contains(&c) => {
                     self.drain_push(c, editor, job, TokenType::Str(c));
