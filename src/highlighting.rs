@@ -37,15 +37,10 @@ impl Highlighter {
         self.buffer.push(c);
         let mut token = None;
         self.ty = match c {
-            '\n' => {
-                self.ty = TokenType::NewLine;
-                token = self.drain(self.ty);
-                TokenType::NewLine
-            }
             c if c.is_whitespace() => {
-                self.ty = TokenType::Whitespace;
+                self.ty = TokenType::Whitespace(c);
                 token = self.drain(self.ty);
-                TokenType::Whitespace
+                TokenType::Whitespace(c)
             }
             c if syntax.is_keyword(c.to_string().as_str()) => TokenType::Keyword,
             c if syntax.is_type(c.to_string().as_str()) => TokenType::Type,
@@ -116,29 +111,25 @@ impl Highlighter {
                 if !multiline {
                     if c == '\n' {
                         let n = self.buffer.pop();
-                        tokens.extend(self.drain(TokenType::NewLine));
+                        tokens.extend(self.drain(TokenType::Whitespace(c)));
                         if let Some(n) = n {
                             tokens.extend(self.push_drain(n, self.ty));
                         }
                     }
                 } else if self.buffer.ends_with(syntax.comment_multiline[1]) {
-                    tokens.extend(self.drain(TokenType::Whitespace));
+                    tokens.extend(self.drain(TokenType::Whitespace(c)));
                 }
             }
             TokenType::Literal => match c {
-                '\n' => {
-                    tokens.extend(self.drain(TokenType::NewLine));
-                    tokens.extend(self.first(c, syntax));
-                }
                 c if c.is_whitespace() => {
-                    tokens.extend(self.drain(TokenType::Whitespace));
+                    tokens.extend(self.drain(TokenType::Whitespace(c)));
                     tokens.extend(self.first(c, syntax));
                 }
 
                 c if c == '(' => {
                     self.ty = TokenType::Function;
                     tokens.extend(self.drain(TokenType::Punctuation));
-                    tokens.extend(self.push_drain(c, TokenType::Whitespace));
+                    tokens.extend(self.push_drain(c, TokenType::Unknown));
                 }
                 c if !c.is_alphanumeric() && !SEPARATORS.contains(&c) => {
                     tokens.extend(self.drain(self.ty));
@@ -184,12 +175,8 @@ impl Highlighter {
                 }
             }
             TokenType::Punctuation => match c {
-                '\n' => {
-                    tokens.extend(self.drain(TokenType::NewLine));
-                    tokens.extend(self.first(c, syntax));
-                }
                 c if c.is_whitespace() => {
-                    tokens.extend(self.drain(TokenType::Whitespace));
+                    tokens.extend(self.drain(TokenType::Whitespace(c)));
                     tokens.extend(self.first(c, syntax));
                 }
                 c if c.is_alphanumeric() || SEPARATORS.contains(&c) => {
@@ -222,10 +209,10 @@ impl Highlighter {
                 let control = self.buffer.ends_with('\\');
                 self.buffer.push(c);
                 if c == q && !control {
-                    tokens.extend(self.drain(TokenType::Whitespace));
+                    tokens.extend(self.drain(TokenType::Unknown));
                 }
             }
-            TokenType::Whitespace => {
+            TokenType::Whitespace(_) | TokenType::Unknown => {
                 tokens.extend(self.first(c, syntax));
             }
             // Keyword, Type, Special

@@ -22,9 +22,9 @@ pub enum TokenType {
     Special,
     Str(char),
     Type,
+    Whitespace(char),
     #[default]
-    Whitespace,
-    NewLine,
+    Unknown,
 }
 impl std::fmt::Debug for TokenType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -50,10 +50,17 @@ impl std::fmt::Debug for TokenType {
                 name.push_str("Str ");
                 name.push(*quote);
             }
-
             TokenType::Type => name.push_str("Type"),
-            TokenType::Whitespace => name.push_str("Whitespace"),
-            TokenType::NewLine => name.push_str("NewLine"),
+            TokenType::Whitespace(c) => {
+                name.push_str("Whitespace");
+                match c {
+                    ' ' => name.push_str(" Space"),
+                    '\t' => name.push_str(" Tab"),
+                    '\n' => name.push_str(" New Line"),
+                    _ => name.push_str(" Other"),
+                };
+            }
+            TokenType::Unknown => name.push_str("Unknown"),
         };
         write!(f, "{name}")
     }
