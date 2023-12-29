@@ -1,7 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
 use eframe::{self, egui, CreationContext};
-use egui_code_editor::{self, CodeEditor, ColorTheme, Syntax};
+use egui_code_editor::{self, highlighting::Highlighter, CodeEditor, ColorTheme, Syntax};
 
 const THEMES: [ColorTheme; 8] = [
     ColorTheme::AYU,
@@ -169,15 +169,32 @@ impl eframe::App for CodeEditorDemo {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            CodeEditor::default()
+            let mut editor = CodeEditor::default()
                 .id_source("code editor")
                 .with_rows(16)
                 .with_fontsize(14.0)
                 .with_theme(self.theme)
                 .with_syntax(self.syntax.to_owned())
                 .with_numlines(true)
-                .vscroll(true)
-                .show(ui, &mut self.code);
+                .vscroll(true);
+            editor.show(ui, &mut self.code);
+
+            egui::CollapsingHeader::new("Debug").show(ui, |ui| {
+                egui::ScrollArea::both()
+                    .auto_shrink([false; 2])
+                    .show(ui, |ui| {
+                        for token in Highlighter::default().tokens(&self.syntax, &self.code) {
+                            ui.horizontal(|h| {
+                                let fmt = editor.format(token.ty());
+                                h.label(egui::text::LayoutJob::single_section(
+                                    format!("{:?}", token.ty()),
+                                    fmt,
+                                ));
+                                h.label(token.buffer());
+                            });
+                        }
+                    });
+            });
         });
     }
 }

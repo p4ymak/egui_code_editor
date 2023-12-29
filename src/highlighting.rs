@@ -1,3 +1,7 @@
+use std::mem;
+
+use crate::Syntax;
+
 use super::syntax::TokenType;
 use super::CodeEditor;
 use egui::text::LayoutJob;
@@ -15,83 +19,122 @@ pub struct Highlighter {
     ty: TokenType,
     buffer: String,
 }
+
 impl egui::util::cache::ComputerMut<(&CodeEditor, &str), LayoutJob> for Highlighter {
     fn compute(&mut self, (cache, text): (&CodeEditor, &str)) -> LayoutJob {
         self.highlight(cache, text)
     }
 }
 impl Highlighter {
-    fn first(&mut self, c: char, editor: &CodeEditor, job: &mut LayoutJob) {
+    pub fn ty(&self) -> TokenType {
+        self.ty
+    }
+    pub fn buffer(&self) -> &str {
+        &self.buffer
+    }
+
+    fn first(&mut self, c: char, syntax: &Syntax) -> Option<Self> {
         self.buffer.push(c);
+        let mut token = None;
         self.ty = match c {
+            '\n' => {
+                self.ty = TokenType::NewLine;
+                token = self.drain(self.ty);
+                TokenType::NewLine
+            }
             c if c.is_whitespace() => {
-                self.drain(editor, job, self.ty);
+                self.ty = TokenType::Whitespace;
+                token = self.drain(self.ty);
                 TokenType::Whitespace
             }
-            c if editor.syntax.is_keyword(c.to_string().as_str()) => TokenType::Keyword,
-            c if editor.syntax.is_type(c.to_string().as_str()) => TokenType::Type,
-            c if editor.syntax.is_special(c.to_string().as_str()) => TokenType::Special,
+            c if syntax.is_keyword(c.to_string().as_str()) => TokenType::Keyword,
+            c if syntax.is_type(c.to_string().as_str()) => TokenType::Type,
+            c if syntax.is_special(c.to_string().as_str()) => TokenType::Special,
             c if c.is_alphabetic() || SEPARATORS.contains(&c) => TokenType::Literal,
             c if c.is_numeric() => TokenType::Numeric,
-            c if editor.syntax.comment == c.to_string().as_str() => TokenType::Comment(false),
-            c if editor.syntax.comment_multiline[0] == c.to_string().as_str() => {
-                TokenType::Comment(true)
-            }
+            c if syntax.comment == c.to_string().as_str() => TokenType::Comment(false),
+            c if syntax.comment_multiline[0] == c.to_string().as_str() => TokenType::Comment(true),
             c if QUOTES.contains(&c) => TokenType::Str(c),
             _ => TokenType::Punctuation,
         };
+        token
     }
 
-    fn drain(&mut self, editor: &CodeEditor, job: &mut LayoutJob, ty: TokenType) {
-        editor.append(job, &self.buffer, self.ty);
-        self.buffer.clear();
+    fn drain(&mut self, ty: TokenType) -> Option<Self> {
+        let mut token = None;
+        if !self.buffer().is_empty() {
+            token = Some(Highlighter {
+                buffer: mem::take(&mut self.buffer),
+                ty: self.ty,
+            });
+        }
         self.ty = ty;
+        token
     }
 
-    fn push_drain(&mut self, c: char, editor: &CodeEditor, job: &mut LayoutJob, ty: TokenType) {
+    fn push_drain(&mut self, c: char, ty: TokenType) -> Option<Self> {
         self.buffer.push(c);
-        self.drain(editor, job, ty);
+        self.drain(ty)
     }
 
-    fn drain_push(&mut self, c: char, editor: &CodeEditor, job: &mut LayoutJob, ty: TokenType) {
-        self.drain(editor, job, self.ty);
+    fn drain_push(&mut self, c: char, ty: TokenType) -> Option<Self> {
+        let token = self.drain(self.ty);
         self.buffer.push(c);
         self.ty = ty;
+        token
     }
 
     pub fn highlight(&mut self, editor: &CodeEditor, text: &str) -> LayoutJob {
         *self = Highlighter::default();
         let mut job = LayoutJob::default();
         for c in text.chars() {
-            self.automata(c, editor, &mut job);
+            for token in self.automata(c, &editor.syntax) {
+                editor.append(&mut job, &token);
+            }
         }
-        self.drain(editor, &mut job, TokenType::Whitespace);
+        editor.append(&mut job, self);
         job
     }
 
-    fn automata(&mut self, c: char, editor: &CodeEditor, job: &mut LayoutJob) {
+    pub fn tokens(&mut self, syntax: &Syntax, text: &str) -> Vec<Self> {
+        let mut tokens: Vec<Self> = text
+            .chars()
+            .flat_map(|c| self.automata(c, syntax))
+            .collect();
+
+        if !self.buffer.is_empty() {
+            tokens.push(mem::take(self));
+        }
+        tokens
+    }
+    fn automata(&mut self, c: char, syntax: &Syntax) -> Vec<Self> {
+        let mut tokens = vec![];
         match self.ty {
             TokenType::Comment(multiline) => {
                 self.buffer.push(c);
                 if !multiline {
                     if c == '\n' {
-                        self.drain(editor, job, TokenType::Whitespace);
+                        let n = self.buffer.pop();
+                        tokens.extend(self.drain(TokenType::NewLine));
+                        if let Some(n) = n {
+                            tokens.extend(self.push_drain(n, self.ty));
+                        }
                     }
-                } else if self.buffer.ends_with(editor.syntax.comment_multiline[1]) {
-                    self.drain(editor, job, TokenType::Whitespace);
+                } else if self.buffer.ends_with(syntax.comment_multiline[1]) {
+                    tokens.extend(self.drain(TokenType::Whitespace));
                 }
             }
             TokenType::Literal => match c {
                 c if c.is_whitespace() => {
-                    self.push_drain(c, editor, job, TokenType::Whitespace);
+                    tokens.extend(self.push_drain(c, TokenType::Whitespace));
                 }
                 c if c == '(' => {
                     self.ty = TokenType::Function;
-                    self.drain(editor, job, TokenType::Punctuation);
-                    self.push_drain(c, editor, job, TokenType::Whitespace);
+                    tokens.extend(self.drain(TokenType::Punctuation));
+                    tokens.extend(self.push_drain(c, TokenType::Whitespace));
                 }
                 c if !c.is_alphanumeric() && !SEPARATORS.contains(&c) => {
-                    self.drain(editor, job, self.ty);
+                    tokens.extend(self.drain(self.ty));
                     self.buffer.push(c);
                     self.ty = if QUOTES.contains(&c) {
                         TokenType::Str(c)
@@ -102,15 +145,15 @@ impl Highlighter {
                 _ => {
                     self.buffer.push(c);
                     self.ty = {
-                        if self.buffer.starts_with(editor.syntax.comment) {
+                        if self.buffer.starts_with(syntax.comment) {
                             TokenType::Comment(false)
-                        } else if self.buffer.starts_with(editor.syntax.comment_multiline[0]) {
+                        } else if self.buffer.starts_with(syntax.comment_multiline[0]) {
                             TokenType::Comment(true)
-                        } else if editor.syntax.is_keyword(&self.buffer) {
+                        } else if syntax.is_keyword(&self.buffer) {
                             TokenType::Keyword
-                        } else if editor.syntax.is_type(&self.buffer) {
+                        } else if syntax.is_type(&self.buffer) {
                             TokenType::Type
-                        } else if editor.syntax.is_special(&self.buffer) {
+                        } else if syntax.is_special(&self.buffer) {
                             TokenType::Special
                         } else {
                             TokenType::Literal
@@ -122,43 +165,48 @@ impl Highlighter {
                 if c.is_numeric() {
                     self.buffer.push(c);
                 } else {
-                    self.drain(editor, job, self.ty);
+                    tokens.extend(self.drain(self.ty));
                     match c {
                         c if c.is_alphabetic() || c == '_' => {
                             self.buffer.push(c);
                         }
                         _ => {
-                            self.first(c, editor, job);
+                            tokens.extend(self.first(c, syntax));
                         }
                     }
                 }
             }
             TokenType::Punctuation => match c {
+                '\n' => {
+                    tokens.extend(self.drain(TokenType::NewLine));
+                    tokens.extend(self.first(c, syntax));
+                }
                 c if c.is_whitespace() => {
-                    self.push_drain(c, editor, job, TokenType::Whitespace);
+                    tokens.extend(self.drain(TokenType::Whitespace));
+                    tokens.extend(self.first(c, syntax));
                 }
                 c if c.is_alphanumeric() || SEPARATORS.contains(&c) => {
-                    self.drain(editor, job, self.ty);
-                    self.first(c, editor, job);
+                    tokens.extend(self.drain(self.ty));
+                    tokens.extend(self.first(c, syntax));
                 }
                 c if QUOTES.contains(&c) => {
-                    self.drain_push(c, editor, job, TokenType::Str(c));
+                    tokens.extend(self.drain_push(c, TokenType::Str(c)));
                 }
                 _ => {
-                    if !(editor.syntax.comment.starts_with(&self.buffer)
-                        || editor.syntax.comment_multiline[0].starts_with(&self.buffer))
+                    if !(syntax.comment.starts_with(&self.buffer)
+                        || syntax.comment_multiline[0].starts_with(&self.buffer))
                     {
-                        self.drain(editor, job, self.ty);
-                        self.first(c, editor, job);
+                        tokens.extend(self.drain(self.ty));
+                        tokens.extend(self.first(c, syntax));
                     } else {
                         self.buffer.push(c);
-                        if self.buffer.starts_with(editor.syntax.comment) {
+                        if self.buffer.starts_with(syntax.comment) {
                             self.ty = TokenType::Comment(false);
-                        } else if self.buffer.starts_with(editor.syntax.comment_multiline[0]) {
+                        } else if self.buffer.starts_with(syntax.comment_multiline[0]) {
                             self.ty = TokenType::Comment(true);
                         } else if let Some(c) = self.buffer.pop() {
-                            self.drain(editor, job, TokenType::Punctuation);
-                            self.first(c, editor, job);
+                            tokens.extend(self.drain(TokenType::Punctuation));
+                            tokens.extend(self.first(c, syntax));
                         }
                     }
                 }
@@ -167,29 +215,30 @@ impl Highlighter {
                 let control = self.buffer.ends_with('\\');
                 self.buffer.push(c);
                 if c == q && !control {
-                    self.drain(editor, job, TokenType::Whitespace);
+                    tokens.extend(self.drain(TokenType::Whitespace));
                 }
             }
             TokenType::Whitespace => {
-                self.first(c, editor, job);
+                tokens.extend(self.first(c, syntax));
             }
             // Keyword, Type, Special
             reserved => {
                 if !(c.is_alphanumeric() || SEPARATORS.contains(&c)) {
                     self.ty = reserved;
-                    self.drain(editor, job, self.ty);
-                    self.first(c, editor, job);
+                    tokens.extend(self.drain(self.ty));
+                    tokens.extend(self.first(c, syntax));
                 } else {
                     self.buffer.push(c);
                     self.ty = TokenType::Literal;
                 }
             }
         }
+        tokens
     }
 }
 
 impl CodeEditor {
-    fn append(&self, job: &mut LayoutJob, text: &str, ty: TokenType) {
-        job.append(text, 0.0, self.format(ty));
+    fn append(&self, job: &mut LayoutJob, token: &Highlighter) {
+        job.append(token.buffer(), 0.0, self.format(token.ty()));
     }
 }

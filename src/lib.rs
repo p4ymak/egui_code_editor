@@ -16,11 +16,13 @@
 //!   .show(ui, &mut self.code);
 //! ```
 
-mod highlighting;
+pub mod highlighting;
 mod syntax;
 mod themes;
+
 use egui::widgets::text_edit::TextEditOutput;
 use highlighting::highlight;
+pub use highlighting::Highlighter;
 use std::hash::{Hash, Hasher};
 pub use syntax::Syntax;
 use syntax::TokenType;
@@ -157,7 +159,7 @@ impl CodeEditor {
     }
 
     #[must_use]
-    fn format(&self, ty: TokenType) -> egui::text::TextFormat {
+    pub fn format(&self, ty: TokenType) -> egui::text::TextFormat {
         let font_id = egui::FontId::monospace(self.fontsize);
         let color = self.theme.type_color(ty);
         egui::text::TextFormat::simple(font_id, color)

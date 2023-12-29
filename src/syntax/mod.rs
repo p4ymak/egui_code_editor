@@ -10,7 +10,7 @@ use std::hash::{Hash, Hasher};
 
 type Multiline = bool;
 
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum TokenType {
     Comment(Multiline),
@@ -24,6 +24,39 @@ pub enum TokenType {
     Type,
     #[default]
     Whitespace,
+    NewLine,
+}
+impl std::fmt::Debug for TokenType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut name = String::new();
+        match &self {
+            TokenType::Comment(multiline) => {
+                name.push_str("Comment");
+                {
+                    if *multiline {
+                        name.push_str(" Multiline");
+                    } else {
+                        name.push_str(" Singleline");
+                    }
+                }
+            }
+            TokenType::Function => name.push_str("Function"),
+            TokenType::Keyword => name.push_str("Keyword"),
+            TokenType::Literal => name.push_str("Literal"),
+            TokenType::Numeric => name.push_str("Numeric"),
+            TokenType::Punctuation => name.push_str("Punctuation"),
+            TokenType::Special => name.push_str("Special"),
+            TokenType::Str(quote) => {
+                name.push_str("Str ");
+                name.push(*quote);
+            }
+
+            TokenType::Type => name.push_str("Type"),
+            TokenType::Whitespace => name.push_str("Whitespace"),
+            TokenType::NewLine => name.push_str("NewLine"),
+        };
+        write!(f, "{name}")
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]

@@ -101,7 +101,7 @@ impl ColorTheme {
             TokenType::Special => self.special,
             TokenType::Str(_) => self.strs,
             TokenType::Type => self.types,
-            TokenType::Whitespace => self.bg,
+            TokenType::Whitespace | TokenType::NewLine => self.comments,
         }
     }
 
@@ -117,7 +117,7 @@ impl ColorTheme {
             TokenType::Special => color_from_hex(self.special),
             TokenType::Str(_) => color_from_hex(self.strs),
             TokenType::Type => color_from_hex(self.types),
-            TokenType::Whitespace => color_from_hex(self.bg),
+            TokenType::Whitespace | TokenType::NewLine => color_from_hex(self.comments),
         }
         .unwrap_or(ERROR_COLOR)
     }
