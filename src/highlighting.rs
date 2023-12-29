@@ -107,6 +107,7 @@ impl Highlighter {
         }
         tokens
     }
+
     fn automata(&mut self, c: char, syntax: &Syntax) -> Vec<Self> {
         let mut tokens = vec![];
         match self.ty {
@@ -125,9 +126,15 @@ impl Highlighter {
                 }
             }
             TokenType::Literal => match c {
-                c if c.is_whitespace() => {
-                    tokens.extend(self.push_drain(c, TokenType::Whitespace));
+                '\n' => {
+                    tokens.extend(self.drain(TokenType::NewLine));
+                    tokens.extend(self.first(c, syntax));
                 }
+                c if c.is_whitespace() => {
+                    tokens.extend(self.drain(TokenType::Whitespace));
+                    tokens.extend(self.first(c, syntax));
+                }
+
                 c if c == '(' => {
                     self.ty = TokenType::Function;
                     tokens.extend(self.drain(TokenType::Punctuation));
@@ -229,7 +236,15 @@ impl Highlighter {
                     tokens.extend(self.first(c, syntax));
                 } else {
                     self.buffer.push(c);
-                    self.ty = TokenType::Literal;
+                    self.ty = if syntax.is_keyword(&self.buffer) {
+                        TokenType::Keyword
+                    } else if syntax.is_type(&self.buffer) {
+                        TokenType::Type
+                    } else if syntax.is_special(&self.buffer) {
+                        TokenType::Special
+                    } else {
+                        TokenType::Literal
+                    };
                 }
             }
         }

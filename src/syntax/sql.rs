@@ -63,6 +63,7 @@ impl Syntax {
                 "RIGHT",
                 "ROWNUM",
                 "TOP",
+                "TOPDOWN", //FIXME
                 "TRUNCATE",
                 "UNION",
                 "UPDATE",
