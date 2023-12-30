@@ -11,13 +11,13 @@ use std::hash::{Hash, Hasher};
 pub const SEPARATORS: [char; 1] = ['_'];
 pub const QUOTES: [char; 3] = ['\'', '"', '`'];
 
-type Multiline = bool;
+type MultiLine = bool;
 type Float = bool;
 
 #[derive(Default, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum TokenType {
-    Comment(Multiline),
+    Comment(MultiLine),
     Function,
     Keyword,
     Literal,
@@ -38,9 +38,9 @@ impl std::fmt::Debug for TokenType {
                 name.push_str("Comment");
                 {
                     if *multiline {
-                        name.push_str(" Multiline");
+                        name.push_str(" MultiLine");
                     } else {
-                        name.push_str(" Singleline");
+                        name.push_str(" SingleLine");
                     }
                 }
             }
@@ -88,6 +88,7 @@ impl From<char> for TokenType {
         }
     }
 }
+
 #[derive(Clone, Debug, PartialEq)]
 /// Rules for highlighting.
 pub struct Syntax {
