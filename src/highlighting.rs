@@ -108,7 +108,7 @@ impl Highlighter {
                 self.buffer.push(c);
 
                 let n = self.buffer.pop();
-                tokens.extend(self.drain(TokenType::Whitespace(c)));
+                tokens.extend(self.drain(Ty::Whitespace(c)));
                 if let Some(n) = n {
                     tokens.extend(self.push_drain(n, self.ty));
                 }
@@ -135,26 +135,26 @@ impl Highlighter {
                     tokens.extend(self.drain(self.ty));
                     self.buffer.push(c);
                     self.ty = if QUOTES.contains(&c) {
-                        TokenType::Str(c)
+                        Ty::Str(c)
                     } else {
-                        TokenType::Punctuation
+                        Ty::Punctuation
                     };
                 }
                 _ => {
                     self.buffer.push(c);
                     self.ty = {
                         if self.buffer.starts_with(syntax.comment) {
-                            TokenType::Comment(false)
+                            Ty::Comment(false)
                         } else if self.buffer.starts_with(syntax.comment_multiline[0]) {
-                            TokenType::Comment(true)
+                            Ty::Comment(true)
                         } else if syntax.is_keyword(&self.buffer) {
-                            TokenType::Keyword
+                            Ty::Keyword
                         } else if syntax.is_type(&self.buffer) {
-                            TokenType::Type
+                            Ty::Type
                         } else if syntax.is_special(&self.buffer) {
-                            TokenType::Special
+                            Ty::Special
                         } else {
-                            TokenType::Literal
+                            Ty::Literal
                         }
                     };
                 }
@@ -171,7 +171,7 @@ impl Highlighter {
                 tokens.extend(self.first(c, syntax));
             }
             (Ty::Punctuation, Ty::Str(_)) => {
-                tokens.extend(self.drain_push(c, TokenType::Str(c)));
+                tokens.extend(self.drain_push(c, Ty::Str(c)));
             }
             (Ty::Punctuation, _) => {
                 if !(syntax.comment.starts_with(&self.buffer)
@@ -182,23 +182,23 @@ impl Highlighter {
                 } else {
                     self.buffer.push(c);
                     if self.buffer.starts_with(syntax.comment) {
-                        self.ty = TokenType::Comment(false);
+                        self.ty = Ty::Comment(false);
                     } else if self.buffer.starts_with(syntax.comment_multiline[0]) {
-                        self.ty = TokenType::Comment(true);
+                        self.ty = Ty::Comment(true);
                     } else if let Some(c) = self.buffer.pop() {
-                        tokens.extend(self.drain(TokenType::Punctuation));
+                        tokens.extend(self.drain(Ty::Punctuation));
                         tokens.extend(self.first(c, syntax));
                     }
                 }
             }
-            (TokenType::Str(q), _) => {
+            (Ty::Str(q), _) => {
                 let control = self.buffer.ends_with('\\');
                 self.buffer.push(c);
                 if c == q && !control {
-                    tokens.extend(self.drain(TokenType::Unknown));
+                    tokens.extend(self.drain(Ty::Unknown));
                 }
             }
-            (TokenType::Whitespace(_) | TokenType::Unknown, _) => {
+            (Ty::Whitespace(_) | Ty::Unknown, _) => {
                 tokens.extend(self.first(c, syntax));
             }
             // Keyword, Type, Special
@@ -210,13 +210,13 @@ impl Highlighter {
                 } else {
                     self.buffer.push(c);
                     self.ty = if syntax.is_keyword(&self.buffer) {
-                        TokenType::Keyword
+                        Ty::Keyword
                     } else if syntax.is_type(&self.buffer) {
-                        TokenType::Type
+                        Ty::Type
                     } else if syntax.is_special(&self.buffer) {
-                        TokenType::Special
+                        Ty::Special
                     } else {
-                        TokenType::Literal
+                        Ty::Literal
                     };
                 }
             }
