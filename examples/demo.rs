@@ -171,7 +171,7 @@ impl eframe::App for CodeEditorDemo {
         egui::CentralPanel::default().show(ctx, |ui| {
             let mut editor = CodeEditor::default()
                 .id_source("code editor")
-                .with_rows(16)
+                .with_rows(10)
                 .with_fontsize(14.0)
                 .with_theme(self.theme)
                 .with_syntax(self.syntax.to_owned())

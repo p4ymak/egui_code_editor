@@ -10,7 +10,9 @@ use std::hash::{Hash, Hasher};
 
 pub const SEPARATORS: [char; 1] = ['_'];
 pub const QUOTES: [char; 3] = ['\'', '"', '`'];
+
 type Multiline = bool;
+type Float = bool;
 
 #[derive(Default, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
@@ -19,8 +21,8 @@ pub enum TokenType {
     Function,
     Keyword,
     Literal,
-    Numeric,
-    Punctuation,
+    Numeric(Float),
+    Punctuation(char),
     Special,
     Str(char),
     Type,
@@ -45,8 +47,15 @@ impl std::fmt::Debug for TokenType {
             TokenType::Function => name.push_str("Function"),
             TokenType::Keyword => name.push_str("Keyword"),
             TokenType::Literal => name.push_str("Literal"),
-            TokenType::Numeric => name.push_str("Numeric"),
-            TokenType::Punctuation => name.push_str("Punctuation"),
+            TokenType::Numeric(float) => {
+                name.push_str("Numeric");
+                if *float {
+                    name.push_str(" Float");
+                } else {
+                    name.push_str(" Integer");
+                }
+            }
+            TokenType::Punctuation(_) => name.push_str("Punctuation"),
             TokenType::Special => name.push_str("Special"),
             TokenType::Str(quote) => {
                 name.push_str("Str ");
@@ -72,8 +81,8 @@ impl From<char> for TokenType {
         match c {
             c if c.is_whitespace() => TokenType::Whitespace(c),
             c if QUOTES.contains(&c) => TokenType::Str(c),
-            c if c.is_ascii_punctuation() => TokenType::Punctuation,
-            c if c.is_numeric() => TokenType::Numeric,
+            c if c.is_ascii_punctuation() => TokenType::Punctuation(c),
+            c if c.is_numeric() => TokenType::Numeric(false),
             c if c.is_alphabetic() || SEPARATORS.contains(&c) => TokenType::Literal,
             _ => TokenType::Unknown,
         }
