@@ -202,23 +202,22 @@ impl Highlighter {
                 tokens.extend(self.first(c, syntax));
             }
             // Keyword, Type, Special
-            (reserved, _) => {
-                if !(c.is_alphanumeric() || SEPARATORS.contains(&c)) {
-                    self.ty = reserved;
-                    tokens.extend(self.drain(self.ty));
-                    tokens.extend(self.first(c, syntax));
+            (_reserved, Ty::Literal | Ty::Numeric(_)) => {
+                self.buffer.push(c);
+                self.ty = if syntax.is_keyword(&self.buffer) {
+                    Ty::Keyword
+                } else if syntax.is_type(&self.buffer) {
+                    Ty::Type
+                } else if syntax.is_special(&self.buffer) {
+                    Ty::Special
                 } else {
-                    self.buffer.push(c);
-                    self.ty = if syntax.is_keyword(&self.buffer) {
-                        Ty::Keyword
-                    } else if syntax.is_type(&self.buffer) {
-                        Ty::Type
-                    } else if syntax.is_special(&self.buffer) {
-                        Ty::Special
-                    } else {
-                        Ty::Literal
-                    };
-                }
+                    Ty::Literal
+                };
+            }
+            (reserved, _) => {
+                self.ty = reserved;
+                tokens.extend(self.drain(self.ty));
+                tokens.extend(self.first(c, syntax));
             }
         }
         tokens

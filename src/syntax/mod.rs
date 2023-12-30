@@ -81,9 +81,9 @@ impl From<char> for TokenType {
         match c {
             c if c.is_whitespace() => TokenType::Whitespace(c),
             c if QUOTES.contains(&c) => TokenType::Str(c),
-            c if c.is_ascii_punctuation() => TokenType::Punctuation(c),
             c if c.is_numeric() => TokenType::Numeric(false),
             c if c.is_alphabetic() || SEPARATORS.contains(&c) => TokenType::Literal,
+            c if c.is_ascii_punctuation() => TokenType::Punctuation(c),
             _ => TokenType::Unknown,
         }
     }
