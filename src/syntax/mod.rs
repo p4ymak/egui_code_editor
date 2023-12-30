@@ -8,6 +8,8 @@ pub mod sql;
 use std::collections::BTreeSet;
 use std::hash::{Hash, Hasher};
 
+pub const SEPARATORS: [char; 1] = ['_'];
+pub const QUOTES: [char; 3] = ['\'', '"', '`'];
 type Multiline = bool;
 
 #[derive(Default, Clone, Copy, PartialEq)]
@@ -57,7 +59,7 @@ impl std::fmt::Debug for TokenType {
                     ' ' => name.push_str(" Space"),
                     '\t' => name.push_str(" Tab"),
                     '\n' => name.push_str(" New Line"),
-                    _ => name.push_str(" Other"),
+                    _ => (),
                 };
             }
             TokenType::Unknown => name.push_str("Unknown"),
@@ -65,7 +67,18 @@ impl std::fmt::Debug for TokenType {
         write!(f, "{name}")
     }
 }
-
+impl From<char> for TokenType {
+    fn from(c: char) -> Self {
+        match c {
+            c if c.is_whitespace() => TokenType::Whitespace(c),
+            c if QUOTES.contains(&c) => TokenType::Str(c),
+            c if c.is_ascii_punctuation() => TokenType::Punctuation,
+            c if c.is_numeric() => TokenType::Numeric,
+            c if c.is_alphabetic() || SEPARATORS.contains(&c) => TokenType::Literal,
+            _ => TokenType::Unknown,
+        }
+    }
+}
 #[derive(Clone, Debug, PartialEq)]
 /// Rules for highlighting.
 pub struct Syntax {

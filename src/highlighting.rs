@@ -2,12 +2,9 @@ use std::mem;
 
 use crate::Syntax;
 
-use super::syntax::TokenType;
+use super::syntax::{TokenType, QUOTES, SEPARATORS};
 use super::CodeEditor;
 use egui::text::LayoutJob;
-
-const SEPARATORS: [char; 1] = ['_'];
-const QUOTES: [char; 3] = ['\'', '"', '`'];
 
 pub type HighlightCache = egui::util::cache::FrameCache<LayoutJob, Highlighter>;
 pub fn highlight(ctx: &egui::Context, cache: &CodeEditor, text: &str) -> LayoutJob {
@@ -104,32 +101,35 @@ impl Highlighter {
     }
 
     fn automata(&mut self, c: char, syntax: &Syntax) -> Vec<Self> {
+        use TokenType as Ty;
         let mut tokens = vec![];
-        match self.ty {
-            TokenType::Comment(multiline) => {
+        match (self.ty, Ty::from(c)) {
+            (Ty::Comment(false), Ty::Whitespace('\n')) => {
                 self.buffer.push(c);
-                if !multiline {
-                    if c == '\n' {
-                        let n = self.buffer.pop();
-                        tokens.extend(self.drain(TokenType::Whitespace(c)));
-                        if let Some(n) = n {
-                            tokens.extend(self.push_drain(n, self.ty));
-                        }
-                    }
-                } else if self.buffer.ends_with(syntax.comment_multiline[1]) {
-                    tokens.extend(self.drain(TokenType::Whitespace(c)));
+
+                let n = self.buffer.pop();
+                tokens.extend(self.drain(TokenType::Whitespace(c)));
+                if let Some(n) = n {
+                    tokens.extend(self.push_drain(n, self.ty));
                 }
             }
-            TokenType::Literal => match c {
-                c if c.is_whitespace() => {
-                    tokens.extend(self.drain(TokenType::Whitespace(c)));
-                    tokens.extend(self.first(c, syntax));
+            (Ty::Comment(false), _) => {
+                self.buffer.push(c);
+            }
+            (Ty::Comment(true), _) => {
+                if self.buffer.ends_with(syntax.comment_multiline[1]) {
+                    tokens.extend(self.drain(Ty::Whitespace(c)));
                 }
-
+            }
+            (Ty::Literal | Ty::Punctuation, Ty::Whitespace(_)) => {
+                tokens.extend(self.drain(Ty::Whitespace(c)));
+                tokens.extend(self.first(c, syntax));
+            }
+            (Ty::Literal, _) => match c {
                 c if c == '(' => {
-                    self.ty = TokenType::Function;
-                    tokens.extend(self.drain(TokenType::Punctuation));
-                    tokens.extend(self.push_drain(c, TokenType::Unknown));
+                    self.ty = Ty::Function;
+                    tokens.extend(self.drain(Ty::Punctuation));
+                    tokens.extend(self.push_drain(c, Ty::Unknown));
                 }
                 c if !c.is_alphanumeric() && !SEPARATORS.contains(&c) => {
                     tokens.extend(self.drain(self.ty));
@@ -159,64 +159,50 @@ impl Highlighter {
                     };
                 }
             },
-            TokenType::Numeric => {
-                if c.is_numeric() {
-                    self.buffer.push(c);
-                } else {
+            (Ty::Numeric, Ty::Numeric) => {
+                self.buffer.push(c);
+            }
+            (Ty::Numeric, Ty::Literal) => {
+                tokens.extend(self.drain(self.ty));
+                self.buffer.push(c);
+            }
+            (Ty::Numeric, _) | (Ty::Punctuation, Ty::Literal | Ty::Numeric) => {
+                tokens.extend(self.drain(self.ty));
+                tokens.extend(self.first(c, syntax));
+            }
+            (Ty::Punctuation, Ty::Str(_)) => {
+                tokens.extend(self.drain_push(c, TokenType::Str(c)));
+            }
+            (Ty::Punctuation, _) => {
+                if !(syntax.comment.starts_with(&self.buffer)
+                    || syntax.comment_multiline[0].starts_with(&self.buffer))
+                {
                     tokens.extend(self.drain(self.ty));
-                    match c {
-                        c if c.is_alphabetic() || c == '_' => {
-                            self.buffer.push(c);
-                        }
-                        _ => {
-                            tokens.extend(self.first(c, syntax));
-                        }
+                    tokens.extend(self.first(c, syntax));
+                } else {
+                    self.buffer.push(c);
+                    if self.buffer.starts_with(syntax.comment) {
+                        self.ty = TokenType::Comment(false);
+                    } else if self.buffer.starts_with(syntax.comment_multiline[0]) {
+                        self.ty = TokenType::Comment(true);
+                    } else if let Some(c) = self.buffer.pop() {
+                        tokens.extend(self.drain(TokenType::Punctuation));
+                        tokens.extend(self.first(c, syntax));
                     }
                 }
             }
-            TokenType::Punctuation => match c {
-                c if c.is_whitespace() => {
-                    tokens.extend(self.drain(TokenType::Whitespace(c)));
-                    tokens.extend(self.first(c, syntax));
-                }
-                c if c.is_alphanumeric() || SEPARATORS.contains(&c) => {
-                    tokens.extend(self.drain(self.ty));
-                    tokens.extend(self.first(c, syntax));
-                }
-                c if QUOTES.contains(&c) => {
-                    tokens.extend(self.drain_push(c, TokenType::Str(c)));
-                }
-                _ => {
-                    if !(syntax.comment.starts_with(&self.buffer)
-                        || syntax.comment_multiline[0].starts_with(&self.buffer))
-                    {
-                        tokens.extend(self.drain(self.ty));
-                        tokens.extend(self.first(c, syntax));
-                    } else {
-                        self.buffer.push(c);
-                        if self.buffer.starts_with(syntax.comment) {
-                            self.ty = TokenType::Comment(false);
-                        } else if self.buffer.starts_with(syntax.comment_multiline[0]) {
-                            self.ty = TokenType::Comment(true);
-                        } else if let Some(c) = self.buffer.pop() {
-                            tokens.extend(self.drain(TokenType::Punctuation));
-                            tokens.extend(self.first(c, syntax));
-                        }
-                    }
-                }
-            },
-            TokenType::Str(q) => {
+            (TokenType::Str(q), _) => {
                 let control = self.buffer.ends_with('\\');
                 self.buffer.push(c);
                 if c == q && !control {
                     tokens.extend(self.drain(TokenType::Unknown));
                 }
             }
-            TokenType::Whitespace(_) | TokenType::Unknown => {
+            (TokenType::Whitespace(_) | TokenType::Unknown, _) => {
                 tokens.extend(self.first(c, syntax));
             }
             // Keyword, Type, Special
-            reserved => {
+            (reserved, _) => {
                 if !(c.is_alphanumeric() || SEPARATORS.contains(&c)) {
                     self.ty = reserved;
                     tokens.extend(self.drain(self.ty));
