@@ -14,7 +14,7 @@ pub const QUOTES: [char; 3] = ['\'', '"', '`'];
 type MultiLine = bool;
 type Float = bool;
 
-#[derive(Default, Clone, Copy, PartialEq)]
+#[derive(Default, Clone, Copy, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum TokenType {
     Comment(MultiLine),
@@ -111,6 +111,46 @@ impl Hash for Syntax {
     }
 }
 impl Syntax {
+    pub fn new(language: &'static str) -> Self {
+        Syntax {
+            language,
+            ..Default::default()
+        }
+    }
+    pub fn with_case_sensitive(self, case_sensitive: bool) -> Self {
+        Syntax {
+            case_sensitive,
+            ..self
+        }
+    }
+    pub fn with_comment(self, comment: &'static str) -> Self {
+        Syntax { comment, ..self }
+    }
+    pub fn with_comment_multiline(self, comment_multiline: [&'static str; 2]) -> Self {
+        Syntax {
+            comment_multiline,
+            ..self
+        }
+    }
+    pub fn with_keywords<T: Into<BTreeSet<&'static str>>>(self, keywords: T) -> Self {
+        Syntax {
+            keywords: keywords.into(),
+            ..self
+        }
+    }
+    pub fn with_types<T: Into<BTreeSet<&'static str>>>(self, types: T) -> Self {
+        Syntax {
+            types: types.into(),
+            ..self
+        }
+    }
+    pub fn with_special<T: Into<BTreeSet<&'static str>>>(self, special: T) -> Self {
+        Syntax {
+            special: special.into(),
+            ..self
+        }
+    }
+
     #[must_use]
     pub fn language(&self) -> &str {
         self.language

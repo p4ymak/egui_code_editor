@@ -11,7 +11,7 @@ pub fn highlight(ctx: &egui::Context, cache: &CodeEditor, text: &str) -> LayoutJ
     ctx.memory_mut(|mem| mem.caches.cache::<HighlightCache>().get((cache, text)))
 }
 
-#[derive(Default)]
+#[derive(Default, Debug, PartialEq, PartialOrd)]
 pub struct Highlighter {
     ty: TokenType,
     buffer: String,
@@ -23,6 +23,12 @@ impl egui::util::cache::ComputerMut<(&CodeEditor, &str), LayoutJob> for Highligh
     }
 }
 impl Highlighter {
+    pub fn new<S: Into<String>>(ty: TokenType, buffer: S) -> Self {
+        Highlighter {
+            ty,
+            buffer: buffer.into(),
+        }
+    }
     pub fn ty(&self) -> TokenType {
         self.ty
     }

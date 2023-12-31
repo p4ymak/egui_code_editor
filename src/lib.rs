@@ -18,6 +18,8 @@
 
 pub mod highlighting;
 mod syntax;
+#[cfg(test)]
+mod tests;
 mod themes;
 
 use egui::widgets::text_edit::TextEditOutput;
