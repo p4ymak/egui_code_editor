@@ -8,8 +8,8 @@ use super::syntax::TokenType;
 use egui::Color32;
 
 pub const ERROR_COLOR: Color32 = Color32::from_rgb(255, 0, 255);
-/// Array of default themes.
 
+/// Array of default themes.
 pub const DEFAULT_THEMES: [ColorTheme; 8] = [
     ColorTheme::AYU,
     ColorTheme::AYU_MIRAGE,
@@ -20,18 +20,6 @@ pub const DEFAULT_THEMES: [ColorTheme; 8] = [
     ColorTheme::GRUVBOX_LIGHT,
     ColorTheme::SONOKAI,
 ];
-
-fn color_from_hex(hex: &str) -> Option<Color32> {
-    if hex == "none" {
-        return Some(Color32::from_rgba_premultiplied(255, 0, 255, 0));
-    }
-    let rgb = (1..hex.len())
-        .step_by(2)
-        .filter_map(|i| u8::from_str_radix(&hex[i..i + 2], 16).ok())
-        .collect::<Vec<u8>>();
-    let color = Color32::from_rgb(*rgb.first()?, *rgb.get(1)?, *rgb.get(2)?);
-    Some(color)
-}
 
 #[derive(Hash, Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 /// Colors in hexadecimal notation as used in HTML and CSS.
@@ -67,15 +55,15 @@ impl ColorTheme {
     }
     #[must_use]
     pub fn bg(&self) -> Color32 {
-        color_from_hex(self.bg).unwrap_or(ERROR_COLOR)
+        Color32::from_hex(self.bg).unwrap_or(ERROR_COLOR)
     }
     #[must_use]
     pub fn cursor(&self) -> Color32 {
-        color_from_hex(self.cursor).unwrap_or(ERROR_COLOR)
+        Color32::from_hex(self.cursor).unwrap_or(ERROR_COLOR)
     }
     #[must_use]
     pub fn selection(&self) -> Color32 {
-        color_from_hex(self.selection).unwrap_or(ERROR_COLOR)
+        Color32::from_hex(self.selection).unwrap_or(ERROR_COLOR)
     }
 
     pub fn modify_style(&self, ui: &mut egui::Ui, fontsize: f32) {
@@ -108,16 +96,16 @@ impl ColorTheme {
     #[must_use]
     pub fn type_color(&self, ty: TokenType) -> Color32 {
         match ty {
-            TokenType::Comment(_) => color_from_hex(self.comments),
-            TokenType::Function => color_from_hex(self.functions),
-            TokenType::Keyword => color_from_hex(self.keywords),
-            TokenType::Literal => color_from_hex(self.literals),
-            TokenType::Numeric(_) => color_from_hex(self.numerics),
-            TokenType::Punctuation(_) => color_from_hex(self.punctuation),
-            TokenType::Special => color_from_hex(self.special),
-            TokenType::Str(_) => color_from_hex(self.strs),
-            TokenType::Type => color_from_hex(self.types),
-            TokenType::Whitespace(_) | TokenType::Unknown => color_from_hex(self.comments),
+            TokenType::Comment(_) => Color32::from_hex(self.comments),
+            TokenType::Function => Color32::from_hex(self.functions),
+            TokenType::Keyword => Color32::from_hex(self.keywords),
+            TokenType::Literal => Color32::from_hex(self.literals),
+            TokenType::Numeric(_) => Color32::from_hex(self.numerics),
+            TokenType::Punctuation(_) => Color32::from_hex(self.punctuation),
+            TokenType::Special => Color32::from_hex(self.special),
+            TokenType::Str(_) => Color32::from_hex(self.strs),
+            TokenType::Type => Color32::from_hex(self.types),
+            TokenType::Whitespace(_) | TokenType::Unknown => Color32::from_hex(self.comments),
         }
         .unwrap_or(ERROR_COLOR)
     }
