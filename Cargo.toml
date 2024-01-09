@@ -1,7 +1,7 @@
 [package]
 name = "egui_code_editor"
 authors = ["Roman Chumak <p4ymak@yandex.ru>"]
-version = "0.1.10"
+version = "0.2.0"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/p4ymak/egui_code_editor"
@@ -12,14 +12,13 @@ keywords = ["egui", "GUI", "editor", "syntax", "highlighting"]
 
 [dependencies]
 egui = "0.24.0"
-eframe = {version = "0.24.0", optional = true}
 
 [lib]
 name = "egui_code_editor"
 
 
 
-[[example]]         # <--- declare the executable
-name = "demo"    # <--- as an example
-[dev-dependencies]  # <-- move the examples-only dependencies here
+[[example]]
+name = "demo"
+[dev-dependencies]
 eframe = "0.24.0"
