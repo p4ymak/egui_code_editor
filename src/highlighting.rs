@@ -1,12 +1,14 @@
+use super::{
+    syntax::{Syntax, TokenType, QUOTES, SEPARATORS},
+    CodeEditor,
+};
+#[cfg(feature = "egui")]
+use egui::text::LayoutJob;
 use std::mem;
 
-use crate::Syntax;
-
-use super::syntax::{TokenType, QUOTES, SEPARATORS};
-use super::CodeEditor;
-use egui::text::LayoutJob;
-
+#[cfg(feature = "egui")]
 pub type HighlightCache = egui::util::cache::FrameCache<LayoutJob, Highlighter>;
+#[cfg(feature = "egui")]
 pub fn highlight(ctx: &egui::Context, cache: &CodeEditor, text: &str) -> LayoutJob {
     ctx.memory_mut(|mem| mem.caches.cache::<HighlightCache>().get((cache, text)))
 }
@@ -16,7 +18,7 @@ pub struct Highlighter {
     ty: TokenType,
     buffer: String,
 }
-
+#[cfg(feature = "egui")]
 impl egui::util::cache::ComputerMut<(&CodeEditor, &str), LayoutJob> for Highlighter {
     fn compute(&mut self, (cache, text): (&CodeEditor, &str)) -> LayoutJob {
         self.highlight(cache, text)
@@ -79,6 +81,7 @@ impl Highlighter {
         token
     }
 
+    #[cfg(feature = "egui")]
     pub fn highlight(&mut self, editor: &CodeEditor, text: &str) -> LayoutJob {
         *self = Highlighter::default();
         let mut job = LayoutJob::default();
@@ -230,6 +233,7 @@ impl Highlighter {
     }
 }
 
+#[cfg(feature = "egui")]
 impl CodeEditor {
     fn append(&self, job: &mut LayoutJob, token: &Highlighter) {
         job.append(token.buffer(), 0.0, self.format(token.ty()));
