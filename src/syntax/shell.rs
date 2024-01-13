@@ -2,7 +2,6 @@ use super::Syntax;
 use std::collections::BTreeSet;
 
 impl Syntax {
-    #[must_use]
     pub fn shell() -> Self {
         Syntax {
             language: "Shell",

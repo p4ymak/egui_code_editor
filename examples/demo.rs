@@ -1,7 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
 use eframe::{self, egui, CreationContext};
-use egui_code_editor::{self, highlighting::Highlighter, CodeEditor, ColorTheme, Syntax};
+use egui_code_editor::{self, highlighting::Token, CodeEditor, ColorTheme, Syntax};
 
 const THEMES: [ColorTheme; 8] = [
     ColorTheme::AYU,
@@ -97,7 +97,7 @@ fn main() -> Result<(), eframe::Error> {
             .with_resizable(true)
             .with_maximized(false)
             .with_drag_and_drop(true)
-            .with_inner_size([900.0, 280.0])
+            .with_inner_size([900.0, 600.0])
             .with_min_inner_size([280.0, 280.0]),
 
         ..Default::default()
@@ -179,22 +179,22 @@ impl eframe::App for CodeEditorDemo {
                 .vscroll(true);
             editor.show(ui, &mut self.code);
 
-            egui::CollapsingHeader::new("Debug").show(ui, |ui| {
-                egui::ScrollArea::both()
-                    .auto_shrink([false; 2])
-                    .show(ui, |ui| {
-                        for token in Highlighter::default().tokens(&self.syntax, &self.code) {
-                            ui.horizontal(|h| {
-                                let fmt = editor.format(token.ty());
-                                h.label(egui::text::LayoutJob::single_section(
-                                    format!("{:?}", token.ty()),
-                                    fmt,
-                                ));
-                                h.label(token.buffer());
-                            });
-                        }
-                    });
-            });
+            ui.separator();
+
+            egui::ScrollArea::both()
+                .auto_shrink([false; 2])
+                .show(ui, |ui| {
+                    for token in Token::default().tokens(&self.syntax, &self.code) {
+                        ui.horizontal(|h| {
+                            let fmt = editor.format(token.ty());
+                            h.label(egui::text::LayoutJob::single_section(
+                                format!("{:?}", token.ty()),
+                                fmt,
+                            ));
+                            h.label(token.buffer());
+                        });
+                    }
+                });
         });
     }
 }

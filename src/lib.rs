@@ -22,12 +22,13 @@ mod syntax;
 mod tests;
 mod themes;
 
+#[cfg(feature = "egui")]
 use egui::widgets::text_edit::TextEditOutput;
+#[cfg(feature = "egui")]
 use highlighting::highlight;
-pub use highlighting::Highlighter;
+pub use highlighting::Token;
 use std::hash::{Hash, Hasher};
-pub use syntax::Syntax;
-use syntax::TokenType;
+pub use syntax::{Syntax, TokenType};
 pub use themes::ColorTheme;
 pub use themes::DEFAULT_THEMES;
 
@@ -71,7 +72,6 @@ impl Default for CodeEditor {
 }
 
 impl CodeEditor {
-    #[must_use]
     pub fn id_source(self, id_source: impl Into<String>) -> Self {
         CodeEditor {
             id: id_source.into(),
@@ -79,7 +79,6 @@ impl CodeEditor {
         }
     }
 
-    #[must_use]
     /// Minimum number of rows to show.
     ///
     /// **Default: 10**
@@ -87,7 +86,6 @@ impl CodeEditor {
         CodeEditor { rows, ..self }
     }
 
-    #[must_use]
     /// Use custom Color Theme
     ///
     /// **Default: Gruvbox**
@@ -95,7 +93,6 @@ impl CodeEditor {
         CodeEditor { theme, ..self }
     }
 
-    #[must_use]
     /// Use custom font size
     ///
     /// **Default: 10.0**
@@ -103,7 +100,7 @@ impl CodeEditor {
         CodeEditor { fontsize, ..self }
     }
 
-    #[must_use]
+    #[cfg(feature = "egui")]
     /// Use UI font size
     pub fn with_ui_fontsize(self, ui: &mut egui::Ui) -> Self {
         CodeEditor {
@@ -112,7 +109,6 @@ impl CodeEditor {
         }
     }
 
-    #[must_use]
     /// Show or hide lines numbering
     ///
     /// **Default: true**
@@ -120,7 +116,6 @@ impl CodeEditor {
         CodeEditor { numlines, ..self }
     }
 
-    #[must_use]
     /// Use custom syntax for highlighting
     ///
     /// **Default: Rust**
@@ -128,14 +123,12 @@ impl CodeEditor {
         CodeEditor { syntax, ..self }
     }
 
-    #[must_use]
     /// Turn on/off scrolling on the vertical axis.
     ///
     /// **Default: true**
     pub fn vscroll(self, vscroll: bool) -> Self {
         CodeEditor { vscroll, ..self }
     }
-    #[must_use]
     /// Should the containing area shrink if the content is small?
     ///
     /// **Default: false**
@@ -143,7 +136,6 @@ impl CodeEditor {
         CodeEditor { shrink, ..self }
     }
 
-    #[must_use]
     /// Stick to bottom
     /// The scroll handle will stick to the bottom position even while the content size
     /// changes dynamically. This can be useful to simulate terminal UIs or log/info scrollers.
@@ -160,13 +152,14 @@ impl CodeEditor {
         }
     }
 
-    #[must_use]
+    #[cfg(feature = "egui")]
     pub fn format(&self, ty: TokenType) -> egui::text::TextFormat {
         let font_id = egui::FontId::monospace(self.fontsize);
         let color = self.theme.type_color(ty);
         egui::text::TextFormat::simple(font_id, color)
     }
 
+    #[cfg(feature = "egui")]
     fn numlines_show(&self, ui: &mut egui::Ui, text: &str) {
         let total = if text.ends_with('\n') || text.is_empty() {
             text.lines().count() + 1
@@ -212,6 +205,7 @@ impl CodeEditor {
         );
     }
 
+    #[cfg(feature = "egui")]
     /// Show Code Editor
     pub fn show(&mut self, ui: &mut egui::Ui, text: &mut String) -> TextEditOutput {
         let mut text_edit_output: Option<TextEditOutput> = None;

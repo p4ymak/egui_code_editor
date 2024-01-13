@@ -5,11 +5,13 @@ pub mod gruvbox;
 pub mod sonokai;
 
 use super::syntax::TokenType;
+#[cfg(feature = "egui")]
 use egui::Color32;
 
+#[cfg(feature = "egui")]
 pub const ERROR_COLOR: Color32 = Color32::from_rgb(255, 0, 255);
-/// Array of default themes.
 
+/// Array of default themes.
 pub const DEFAULT_THEMES: [ColorTheme; 8] = [
     ColorTheme::AYU,
     ColorTheme::AYU_MIRAGE,
@@ -21,6 +23,7 @@ pub const DEFAULT_THEMES: [ColorTheme; 8] = [
     ColorTheme::SONOKAI,
 ];
 
+#[cfg(feature = "egui")]
 fn color_from_hex(hex: &str) -> Option<Color32> {
     if hex == "none" {
         return Some(Color32::from_rgba_premultiplied(255, 0, 255, 0));
@@ -57,27 +60,30 @@ impl Default for ColorTheme {
     }
 }
 impl ColorTheme {
-    #[must_use]
     pub fn name(&self) -> &str {
         self.name
     }
-    #[must_use]
+
     pub fn is_dark(&self) -> bool {
         self.dark
     }
-    #[must_use]
+
+    #[cfg(feature = "egui")]
     pub fn bg(&self) -> Color32 {
         color_from_hex(self.bg).unwrap_or(ERROR_COLOR)
     }
-    #[must_use]
+
+    #[cfg(feature = "egui")]
     pub fn cursor(&self) -> Color32 {
         color_from_hex(self.cursor).unwrap_or(ERROR_COLOR)
     }
-    #[must_use]
+
+    #[cfg(feature = "egui")]
     pub fn selection(&self) -> Color32 {
         color_from_hex(self.selection).unwrap_or(ERROR_COLOR)
     }
 
+    #[cfg(feature = "egui")]
     pub fn modify_style(&self, ui: &mut egui::Ui, fontsize: f32) {
         let style = ui.style_mut();
         style.visuals.widgets.noninteractive.bg_fill = self.bg();
@@ -89,7 +95,6 @@ impl ColorTheme {
         style.visuals.text_cursor.width = fontsize * 0.1;
     }
 
-    #[must_use]
     pub const fn type_color_str(&self, ty: TokenType) -> &'static str {
         match ty {
             TokenType::Comment(_) => self.comments,
@@ -105,7 +110,7 @@ impl ColorTheme {
         }
     }
 
-    #[must_use]
+    #[cfg(feature = "egui")]
     pub fn type_color(&self, ty: TokenType) -> Color32 {
         match ty {
             TokenType::Comment(_) => color_from_hex(self.comments),
@@ -122,7 +127,6 @@ impl ColorTheme {
         .unwrap_or(ERROR_COLOR)
     }
 
-    #[must_use]
     pub fn monocolor(
         dark: bool,
         bg: &'static str,

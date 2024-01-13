@@ -151,15 +151,12 @@ impl Syntax {
         }
     }
 
-    #[must_use]
     pub fn language(&self) -> &str {
         self.language
     }
-    #[must_use]
     pub fn comment(&self) -> &str {
         self.comment
     }
-    #[must_use]
     pub fn is_keyword(&self, word: &str) -> bool {
         if self.case_sensitive {
             self.keywords.contains(&word)
@@ -167,7 +164,6 @@ impl Syntax {
             self.keywords.contains(word.to_ascii_uppercase().as_str())
         }
     }
-    #[must_use]
     pub fn is_type(&self, word: &str) -> bool {
         if self.case_sensitive {
             self.types.contains(&word)
@@ -175,7 +171,6 @@ impl Syntax {
             self.types.contains(word.to_ascii_uppercase().as_str())
         }
     }
-    #[must_use]
     pub fn is_special(&self, word: &str) -> bool {
         if self.case_sensitive {
             self.special.contains(&word)
@@ -186,7 +181,6 @@ impl Syntax {
 }
 
 impl Syntax {
-    #[must_use]
     pub fn simple(comment: &'static str) -> Self {
         Syntax {
             language: "",
