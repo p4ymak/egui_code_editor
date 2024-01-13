@@ -2,7 +2,6 @@ use super::Syntax;
 use std::collections::BTreeSet;
 
 impl Syntax {
-    #[must_use]
     pub fn asm() -> Self {
         Syntax {
             language: "Assembly",

@@ -1,32 +1,15 @@
-use super::{
-    syntax::{Syntax, TokenType, QUOTES, SEPARATORS},
-    CodeEditor,
-};
-#[cfg(feature = "egui")]
-use egui::text::LayoutJob;
+use super::syntax::{Syntax, TokenType, QUOTES, SEPARATORS};
 use std::mem;
 
-#[cfg(feature = "egui")]
-pub type HighlightCache = egui::util::cache::FrameCache<LayoutJob, Highlighter>;
-#[cfg(feature = "egui")]
-pub fn highlight(ctx: &egui::Context, cache: &CodeEditor, text: &str) -> LayoutJob {
-    ctx.memory_mut(|mem| mem.caches.cache::<HighlightCache>().get((cache, text)))
-}
-
 #[derive(Default, Debug, PartialEq, PartialOrd)]
-pub struct Highlighter {
+pub struct Token {
     ty: TokenType,
     buffer: String,
 }
-#[cfg(feature = "egui")]
-impl egui::util::cache::ComputerMut<(&CodeEditor, &str), LayoutJob> for Highlighter {
-    fn compute(&mut self, (cache, text): (&CodeEditor, &str)) -> LayoutJob {
-        self.highlight(cache, text)
-    }
-}
-impl Highlighter {
+
+impl Token {
     pub fn new<S: Into<String>>(ty: TokenType, buffer: S) -> Self {
-        Highlighter {
+        Token {
             ty,
             buffer: buffer.into(),
         }
@@ -60,7 +43,7 @@ impl Highlighter {
     fn drain(&mut self, ty: TokenType) -> Option<Self> {
         let mut token = None;
         if !self.buffer().is_empty() {
-            token = Some(Highlighter {
+            token = Some(Token {
                 buffer: mem::take(&mut self.buffer),
                 ty: self.ty,
             });
@@ -83,7 +66,7 @@ impl Highlighter {
 
     #[cfg(feature = "egui")]
     pub fn highlight(&mut self, editor: &CodeEditor, text: &str) -> LayoutJob {
-        *self = Highlighter::default();
+        *self = Token::default();
         let mut job = LayoutJob::default();
         for c in text.chars() {
             for token in self.automata(c, &editor.syntax) {
@@ -122,8 +105,9 @@ impl Highlighter {
                 self.buffer.push(c);
             }
             (Ty::Comment(true), _) => {
+                self.buffer.push(c);
                 if self.buffer.ends_with(syntax.comment_multiline[1]) {
-                    tokens.extend(self.drain(Ty::Whitespace(c)));
+                    tokens.extend(self.drain(Ty::Unknown));
                 }
             }
             (Ty::Literal | Ty::Punctuation(_), Ty::Whitespace(_)) => {
@@ -234,8 +218,28 @@ impl Highlighter {
 }
 
 #[cfg(feature = "egui")]
+use super::CodeEditor;
+#[cfg(feature = "egui")]
+use egui::text::LayoutJob;
+
+#[cfg(feature = "egui")]
+impl egui::util::cache::ComputerMut<(&CodeEditor, &str), LayoutJob> for Token {
+    fn compute(&mut self, (cache, text): (&CodeEditor, &str)) -> LayoutJob {
+        self.highlight(cache, text)
+    }
+}
+
+#[cfg(feature = "egui")]
+pub type HighlightCache = egui::util::cache::FrameCache<LayoutJob, Token>;
+
+#[cfg(feature = "egui")]
+pub fn highlight(ctx: &egui::Context, cache: &CodeEditor, text: &str) -> LayoutJob {
+    ctx.memory_mut(|mem| mem.caches.cache::<HighlightCache>().get((cache, text)))
+}
+
+#[cfg(feature = "egui")]
 impl CodeEditor {
-    fn append(&self, job: &mut LayoutJob, token: &Highlighter) {
+    fn append(&self, job: &mut LayoutJob, token: &Token) {
         job.append(token.buffer(), 0.0, self.format(token.ty()));
     }
 }

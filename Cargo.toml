@@ -19,7 +19,6 @@ name = "egui_code_editor"
 [features]
 default = ["egui"]
 egui = ["dep:egui"]
-no_egui = []
 
 [[example]]
 name = "demo"

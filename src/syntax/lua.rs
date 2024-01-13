@@ -2,7 +2,6 @@ use super::Syntax;
 use std::collections::BTreeSet;
 
 impl Syntax {
-    #[must_use]
     pub fn lua() -> Syntax {
         Syntax {
             language: "Lua",

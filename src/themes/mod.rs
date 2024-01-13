@@ -60,29 +60,24 @@ impl Default for ColorTheme {
     }
 }
 impl ColorTheme {
-    #[must_use]
     pub fn name(&self) -> &str {
         self.name
     }
 
-    #[must_use]
     pub fn is_dark(&self) -> bool {
         self.dark
     }
 
-    #[must_use]
     #[cfg(feature = "egui")]
     pub fn bg(&self) -> Color32 {
         color_from_hex(self.bg).unwrap_or(ERROR_COLOR)
     }
 
-    #[must_use]
     #[cfg(feature = "egui")]
     pub fn cursor(&self) -> Color32 {
         color_from_hex(self.cursor).unwrap_or(ERROR_COLOR)
     }
 
-    #[must_use]
     #[cfg(feature = "egui")]
     pub fn selection(&self) -> Color32 {
         color_from_hex(self.selection).unwrap_or(ERROR_COLOR)
@@ -100,7 +95,6 @@ impl ColorTheme {
         style.visuals.text_cursor.width = fontsize * 0.1;
     }
 
-    #[must_use]
     pub const fn type_color_str(&self, ty: TokenType) -> &'static str {
         match ty {
             TokenType::Comment(_) => self.comments,
@@ -116,7 +110,6 @@ impl ColorTheme {
         }
     }
 
-    #[must_use]
     #[cfg(feature = "egui")]
     pub fn type_color(&self, ty: TokenType) -> Color32 {
         match ty {
@@ -134,7 +127,6 @@ impl ColorTheme {
         .unwrap_or(ERROR_COLOR)
     }
 
-    #[must_use]
     pub fn monocolor(
         dark: bool,
         bg: &'static str,
