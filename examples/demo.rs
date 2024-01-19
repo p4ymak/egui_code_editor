@@ -14,7 +14,7 @@ const THEMES: [ColorTheme; 8] = [
     ColorTheme::SONOKAI,
 ];
 
-const SYNTAXES: [SyntaxDemo; 4] = [
+const SYNTAXES: [SyntaxDemo; 5] = [
     SyntaxDemo::new(
         "Lua",
         r#"-- Binary Search
@@ -28,6 +28,28 @@ function binarySearch(list, value)
     end
     return search(1,#list)
 end"#,
+    ),
+    SyntaxDemo::new(
+        "Python",
+        r#"from collections.abc import Iterable
+from typing import Protocol
+
+class Combiner(Protocol):
+    def __call__(self, *vals: bytes, maxlen: int | None = None) -> list[bytes]: ...
+
+def batch_proc(data: Iterable[bytes], cb_results: Combiner) -> bytes:
+    for item in data:
+        ...
+
+def good_cb(*vals: bytes, maxlen: int | None = None) -> list[bytes]:
+    ...
+"""
+def bad_cb(*vals: bytes, maxitems: int | None) -> list[bytes]:
+    ...
+"""
+batch_proc([], good_cb)  # OK
+batch_proc([], bad_cb)   # Error! Argument 2 has incompatible type because of
+                         # different name and kind in the callback"#,
     ),
     SyntaxDemo::new(
         "Rust",
@@ -81,6 +103,7 @@ impl SyntaxDemo {
         match self.name {
             "Assembly" => Syntax::asm(),
             "Lua" => Syntax::lua(),
+            "Python" => Syntax::python(),
             "Rust" => Syntax::rust(),
             "Shell" => Syntax::shell(),
             "SQL" => Syntax::sql(),
@@ -119,7 +142,7 @@ struct CodeEditorDemo {
 }
 impl CodeEditorDemo {
     fn new(_cc: &CreationContext) -> Self {
-        let rust = SYNTAXES[1];
+        let rust = SYNTAXES[2];
         CodeEditorDemo {
             code: rust.example.to_string(),
             theme: ColorTheme::GRUVBOX,

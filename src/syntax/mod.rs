@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 pub mod asm;
 pub mod lua;
+pub mod python;
 pub mod rust;
 pub mod shell;
 pub mod sql;
@@ -14,7 +15,7 @@ pub const QUOTES: [char; 3] = ['\'', '"', '`'];
 type MultiLine = bool;
 type Float = bool;
 
-#[derive(Default, Clone, Copy, PartialEq, PartialOrd)]
+#[derive(Default, Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum TokenType {
     Comment(MultiLine),

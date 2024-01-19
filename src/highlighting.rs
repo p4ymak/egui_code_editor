@@ -1,7 +1,8 @@
 use super::syntax::{Syntax, TokenType, QUOTES, SEPARATORS};
 use std::mem;
 
-#[derive(Default, Debug, PartialEq, PartialOrd)]
+#[derive(Default, Debug, PartialEq, PartialOrd, Eq, Ord)]
+/// Lexer and Token
 pub struct Token {
     ty: TokenType,
     buffer: String,
@@ -65,6 +66,7 @@ impl Token {
     }
 
     #[cfg(feature = "egui")]
+    /// Syntax highlighting
     pub fn highlight(&mut self, editor: &CodeEditor, text: &str) -> LayoutJob {
         *self = Token::default();
         let mut job = LayoutJob::default();
@@ -77,6 +79,7 @@ impl Token {
         job
     }
 
+    /// Lexer
     pub fn tokens(&mut self, syntax: &Syntax, text: &str) -> Vec<Self> {
         let mut tokens: Vec<Self> = text
             .chars()
