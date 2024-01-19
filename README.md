@@ -17,7 +17,7 @@ CodeEditor::default()
   .show(ui, &mut self.code);
 ```
 
-## Usage as lexer
+## Usage as lexer without egui
 
 **Cargo.toml**
 
