@@ -19,13 +19,15 @@ CodeEditor::default()
 
 ## Usage as lexer
 
-*Cargo.toml*
+**Cargo.toml**
 
 ```toml
 [dependencies]
 egui_code_editor = { version = "0.2" , default-features = false }
 colorful = "0.2.2"
 ```
+
+**main.rs**
 
 ```rust
 use colorful::{Color, Colorful};
