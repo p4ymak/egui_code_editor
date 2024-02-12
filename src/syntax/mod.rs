@@ -136,6 +136,12 @@ impl Syntax {
             ..self
         }
     }
+    pub fn with_hyperlinks<T: Into<BTreeSet<&'static str>>>(self, hyperlinks: T) -> Self {
+        Syntax {
+            hyperlinks: hyperlinks.into(),
+            ..self
+        }
+    }
     pub fn with_keywords<T: Into<BTreeSet<&'static str>>>(self, keywords: T) -> Self {
         Syntax {
             keywords: keywords.into(),
