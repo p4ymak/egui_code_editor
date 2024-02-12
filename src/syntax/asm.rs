@@ -8,6 +8,7 @@ impl Syntax {
             case_sensitive: false,
             comment: ";",
             comment_multiline: ["/*", "*/"],
+            hyperlinks: BTreeSet::from(["http"]),
             keywords: BTreeSet::from([
                 "vaddpd",
                 "divsd",

@@ -8,6 +8,7 @@ impl Syntax {
             case_sensitive: true,
             comment: "--",
             comment_multiline: ["--[[", "]]"],
+            hyperlinks: BTreeSet::from(["http"]),
             keywords: BTreeSet::from([
                 "and", "break", "do", "else", "elseif", "end", "for", "function", "if", "in",
                 "local", "not", "or", "repeat", "return", "then", "until", "while",

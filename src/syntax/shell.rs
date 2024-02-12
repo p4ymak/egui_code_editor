@@ -7,6 +7,7 @@ impl Syntax {
             language: "Shell",
             case_sensitive: true,
             comment: "#",
+            hyperlinks: BTreeSet::from(["http"]),
             keywords: BTreeSet::from([
                 "echo", "read", "set", "unset", "readonly", "shift", "export", "if", "fi", "else",
                 "while", "do", "done", "for", "until", "case", "esac", "break", "continue", "exit",

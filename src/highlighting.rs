@@ -117,6 +117,13 @@ impl Token {
                 tokens.extend(self.drain(Ty::Whitespace(c)));
                 tokens.extend(self.first(c, syntax));
             }
+            (Ty::Hyperlink, Ty::Whitespace(_)) => {
+                tokens.extend(self.drain(Ty::Whitespace(c)));
+                tokens.extend(self.first(c, syntax));
+            }
+            (Ty::Hyperlink, _) => {
+                self.buffer.push(c);
+            }
             (Ty::Literal, _) => match c {
                 c if c == '(' => {
                     self.ty = Ty::Function;
@@ -139,6 +146,8 @@ impl Token {
                             Ty::Comment(false)
                         } else if self.buffer.starts_with(syntax.comment_multiline[0]) {
                             Ty::Comment(true)
+                        } else if syntax.is_hyperlink(&self.buffer) {
+                            Ty::Hyperlink
                         } else if syntax.is_keyword(&self.buffer) {
                             Ty::Keyword
                         } else if syntax.is_type(&self.buffer) {

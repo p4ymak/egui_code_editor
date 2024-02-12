@@ -22,6 +22,7 @@ pub enum TokenType {
     Function,
     Keyword,
     Literal,
+    Hyperlink,
     Numeric(Float),
     Punctuation(char),
     Special,
@@ -48,6 +49,7 @@ impl std::fmt::Debug for TokenType {
             TokenType::Function => name.push_str("Function"),
             TokenType::Keyword => name.push_str("Keyword"),
             TokenType::Literal => name.push_str("Literal"),
+            TokenType::Hyperlink => name.push_str("Hyperlink"),
             TokenType::Numeric(float) => {
                 name.push_str("Numeric");
                 if *float {
@@ -97,6 +99,7 @@ pub struct Syntax {
     pub case_sensitive: bool,
     pub comment: &'static str,
     pub comment_multiline: [&'static str; 2],
+    pub hyperlinks: BTreeSet<&'static str>,
     pub keywords: BTreeSet<&'static str>,
     pub types: BTreeSet<&'static str>,
     pub special: BTreeSet<&'static str>,
@@ -158,6 +161,9 @@ impl Syntax {
     pub fn comment(&self) -> &str {
         self.comment
     }
+    pub fn is_hyperlink(&self, word: &str) -> bool {
+        self.hyperlinks.contains(word.to_ascii_lowercase().as_str())
+    }
     pub fn is_keyword(&self, word: &str) -> bool {
         if self.case_sensitive {
             self.keywords.contains(&word)
@@ -188,6 +194,7 @@ impl Syntax {
             case_sensitive: false,
             comment,
             comment_multiline: [comment; 2],
+            hyperlinks: BTreeSet::new(),
             keywords: BTreeSet::new(),
             types: BTreeSet::new(),
             special: BTreeSet::new(),
