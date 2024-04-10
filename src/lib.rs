@@ -259,13 +259,13 @@ impl CodeEditor {
 
     #[cfg(feature = "egui")]
     /// Show Code Editor
-    pub fn show(&mut self, ui: &mut egui::Ui, text: &mut String) -> TextEditOutput {
+    pub fn show(&mut self, ui: &mut egui::Ui, text: &mut dyn egui::TextBuffer) -> TextEditOutput {
         let mut text_edit_output: Option<TextEditOutput> = None;
         let mut code_editor = |ui: &mut egui::Ui| {
             ui.horizontal_top(|h| {
                 self.theme.modify_style(h, self.fontsize);
                 if self.numlines {
-                    self.numlines_show(h, text);
+                    self.numlines_show(h, text.as_str());
                 }
                 egui::ScrollArea::horizontal()
                     .id_source(format!("{}_inner_scroll", self.id))
