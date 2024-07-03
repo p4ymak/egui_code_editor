@@ -11,7 +11,7 @@ categories = ["gui", "text-editors"]
 keywords = ["egui", "GUI", "editor", "syntax", "highlighting"]
 
 [dependencies]
-egui = {version = "0.27", optional = true}
+egui = {version = "0.28", optional = true}
 
 [lib]
 name = "egui_code_editor"
@@ -23,4 +23,4 @@ egui = ["dep:egui"]
 [[example]]
 name = "demo"
 [dev-dependencies]
-eframe = "0.27"
+eframe = "0.28"
