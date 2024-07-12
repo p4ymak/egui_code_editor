@@ -91,6 +91,7 @@ pub trait Editor: Hash {
     fn syntax(&self) -> &Syntax;
 }
 
+#[cfg(feature = "editor")]
 #[derive(Clone, Debug, PartialEq)]
 /// CodeEditor struct which stores settings for highlighting.
 pub struct CodeEditor {
@@ -105,6 +106,7 @@ pub struct CodeEditor {
     shrink: bool,
 }
 
+#[cfg(feature = "editor")]
 impl Hash for CodeEditor {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.theme.hash(state);
@@ -114,6 +116,7 @@ impl Hash for CodeEditor {
     }
 }
 
+#[cfg(feature = "editor")]
 impl Default for CodeEditor {
     fn default() -> CodeEditor {
         CodeEditor {
@@ -130,6 +133,7 @@ impl Default for CodeEditor {
     }
 }
 
+#[cfg(feature = "editor")]
 impl CodeEditor {
     pub fn id_source(self, id_source: impl Into<String>) -> Self {
         CodeEditor {
@@ -306,6 +310,7 @@ impl CodeEditor {
     }
 }
 
+#[cfg(feature = "editor")]
 #[cfg(feature = "egui")]
 impl Editor for CodeEditor {
     fn append(&self, job: &mut LayoutJob, token: &Token) {
