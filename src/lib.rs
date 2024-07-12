@@ -74,6 +74,7 @@ mod syntax;
 mod tests;
 mod themes;
 
+use egui::text::LayoutJob;
 #[cfg(feature = "egui")]
 use egui::widgets::text_edit::TextEditOutput;
 #[cfg(feature = "egui")]
@@ -83,6 +84,12 @@ use std::hash::{Hash, Hasher};
 pub use syntax::{Syntax, TokenType};
 pub use themes::ColorTheme;
 pub use themes::DEFAULT_THEMES;
+
+#[cfg(feature = "egui")]
+pub trait Editor: Hash {
+    fn append(&self, job: &mut LayoutJob, token: &Token);
+    fn syntax(&self) -> &Syntax;
+}
 
 #[derive(Clone, Debug, PartialEq)]
 /// CodeEditor struct which stores settings for highlighting.
@@ -296,5 +303,16 @@ impl CodeEditor {
         }
 
         text_edit_output.expect("TextEditOutput should exist at this point")
+    }
+}
+
+#[cfg(feature = "egui")]
+impl Editor for CodeEditor {
+    fn append(&self, job: &mut LayoutJob, token: &Token) {
+        job.append(token.buffer(), 0.0, self.format(token.ty()));
+    }
+
+    fn syntax(&self) -> &Syntax {
+        &self.syntax
     }
 }
