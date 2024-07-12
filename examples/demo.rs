@@ -129,7 +129,7 @@ fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "Egui Code Editor Demo",
         options,
-        Box::new(|cc| Ok(Box::new(CodeEditorDemo::new(cc)))),
+        Box::new(|cc| Box::new(CodeEditorDemo::new(cc))),
     )
 }
 
