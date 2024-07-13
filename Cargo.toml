@@ -11,14 +11,15 @@ categories = ["gui", "text-editors"]
 keywords = ["egui", "GUI", "editor", "syntax", "highlighting"]
 
 [dependencies]
-egui = {version = "0.28", optional = true}
+egui = { version = "0.28", optional = true }
 
 [lib]
 name = "egui_code_editor"
 
 [features]
-default = ["egui"]
+default = ["egui", "editor"]
 egui = ["dep:egui"]
+editor = []
 
 [[example]]
 name = "demo"

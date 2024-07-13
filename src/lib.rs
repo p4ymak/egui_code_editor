@@ -74,6 +74,7 @@ mod syntax;
 mod tests;
 mod themes;
 
+use egui::text::LayoutJob;
 #[cfg(feature = "egui")]
 use egui::widgets::text_edit::TextEditOutput;
 #[cfg(feature = "egui")]
@@ -84,6 +85,13 @@ pub use syntax::{Syntax, TokenType};
 pub use themes::ColorTheme;
 pub use themes::DEFAULT_THEMES;
 
+#[cfg(feature = "egui")]
+pub trait Editor: Hash {
+    fn append(&self, job: &mut LayoutJob, token: &Token);
+    fn syntax(&self) -> &Syntax;
+}
+
+#[cfg(feature = "editor")]
 #[derive(Clone, Debug, PartialEq)]
 /// CodeEditor struct which stores settings for highlighting.
 pub struct CodeEditor {
@@ -98,6 +106,7 @@ pub struct CodeEditor {
     shrink: bool,
 }
 
+#[cfg(feature = "editor")]
 impl Hash for CodeEditor {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.theme.hash(state);
@@ -107,6 +116,7 @@ impl Hash for CodeEditor {
     }
 }
 
+#[cfg(feature = "editor")]
 impl Default for CodeEditor {
     fn default() -> CodeEditor {
         CodeEditor {
@@ -123,6 +133,7 @@ impl Default for CodeEditor {
     }
 }
 
+#[cfg(feature = "editor")]
 impl CodeEditor {
     pub fn id_source(self, id_source: impl Into<String>) -> Self {
         CodeEditor {
@@ -296,5 +307,17 @@ impl CodeEditor {
         }
 
         text_edit_output.expect("TextEditOutput should exist at this point")
+    }
+}
+
+#[cfg(feature = "editor")]
+#[cfg(feature = "egui")]
+impl Editor for CodeEditor {
+    fn append(&self, job: &mut LayoutJob, token: &Token) {
+        job.append(token.buffer(), 0.0, self.format(token.ty()));
+    }
+
+    fn syntax(&self) -> &Syntax {
+        &self.syntax
     }
 }
