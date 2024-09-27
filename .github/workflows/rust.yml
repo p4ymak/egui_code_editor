@@ -22,3 +22,5 @@ jobs:
       run: cargo clippy --all-features --locked --all-targets
     - name: Run tests
       run: cargo test --tests --verbose
+    - name: No Egui
+      run: cargo run --example tui --no-default-features

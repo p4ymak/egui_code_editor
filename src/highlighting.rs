@@ -1,3 +1,4 @@
+#[cfg(feature = "editor")]
 use super::Editor;
 
 use super::syntax::{Syntax, TokenType, QUOTES, SEPARATORS};
