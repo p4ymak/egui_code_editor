@@ -34,4 +34,4 @@ test = true
 
 [dev-dependencies]
 eframe = "0.29"
-colorful = "*"
+colorful = "0.3"
