@@ -1,4 +1,5 @@
 # Egui Code Editor
+[![Latest version](https://img.shields.io/crates/v/egui_code_editor.svg)](https://crates.io/crates/egui_code_editor)
 
 Text Editor Widget for [egui](https://github.com/emilk/egui) with numbered lines and simple syntax highlighting based on keywords sets.
 

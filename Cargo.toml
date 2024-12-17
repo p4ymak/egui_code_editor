@@ -1,7 +1,7 @@
 [package]
 name = "egui_code_editor"
 authors = ["Roman Chumak <p4ymak@yandex.ru>"]
-version = "0.2.10"
+version = "0.2.11"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/p4ymak/egui_code_editor"
@@ -11,7 +11,7 @@ categories = ["gui", "text-editors"]
 keywords = ["egui", "GUI", "editor", "syntax", "highlighting"]
 
 [dependencies]
-egui = { version = "0.29", optional = true }
+egui = { version = "0.30", optional = true }
 serde = { version = "1", optional = true}
 
 [lib]
@@ -33,5 +33,5 @@ name = "tui"
 test = true
 
 [dev-dependencies]
-eframe = "0.29"
+eframe = "0.30"
 colorful = "0.3"
