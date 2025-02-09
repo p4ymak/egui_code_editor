@@ -11,7 +11,7 @@ categories = ["gui", "text-editors"]
 keywords = ["egui", "GUI", "editor", "syntax", "highlighting"]
 
 [dependencies]
-egui = { version = "0.30", optional = true }
+egui = { version = "0.31", optional = true }
 serde = { version = "1", optional = true}
 
 [lib]
@@ -33,5 +33,5 @@ name = "tui"
 test = true
 
 [dev-dependencies]
-eframe = "0.30"
+eframe = "0.31"
 colorful = "0.3"
