@@ -105,7 +105,7 @@ pub struct CodeEditor {
     rows: usize,
     vscroll: bool,
     stick_to_bottom: bool,
-    shrink: bool,
+    desired_width: f32,
 }
 
 #[cfg(feature = "editor")]
@@ -130,7 +130,7 @@ impl Default for CodeEditor {
             rows: 10,
             vscroll: true,
             stick_to_bottom: false,
-            shrink: false,
+            desired_width: f32::INFINITY,
         }
     }
 }
@@ -198,7 +198,20 @@ impl CodeEditor {
     ///
     /// **Default: false**
     pub fn auto_shrink(self, shrink: bool) -> Self {
-        CodeEditor { shrink, ..self }
+        CodeEditor {
+            desired_width: if shrink { 0.0 } else { self.desired_width },
+            ..self
+        }
+    }
+
+    /// Sets the desired width of the code editor
+    ///
+    /// **Default: `f32::INFINITY`**
+    pub fn desired_width(self, width: f32) -> Self {
+        CodeEditor {
+            desired_width: width,
+            ..self
+        }
     }
 
     /// Stick to bottom
@@ -292,7 +305,7 @@ impl CodeEditor {
                             .lock_focus(true)
                             .desired_rows(self.rows)
                             .frame(true)
-                            .desired_width(if self.shrink { 0.0 } else { f32::MAX })
+                            .desired_width(self.desired_width)
                             .layouter(&mut layouter)
                             .show(ui);
                         text_edit_output = Some(output);
