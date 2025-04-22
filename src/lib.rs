@@ -101,6 +101,8 @@ pub struct CodeEditor {
     theme: ColorTheme,
     syntax: Syntax,
     numlines: bool,
+    numlines_shift: isize,
+    numlines_only_natural: bool,
     fontsize: f32,
     rows: usize,
     vscroll: bool,
@@ -126,6 +128,8 @@ impl Default for CodeEditor {
             theme: ColorTheme::GRUVBOX,
             syntax: Syntax::rust(),
             numlines: true,
+            numlines_shift: 0,
+            numlines_only_natural: false,
             fontsize: 10.0,
             rows: 10,
             vscroll: true,
@@ -179,6 +183,26 @@ impl CodeEditor {
     /// **Default: true**
     pub fn with_numlines(self, numlines: bool) -> Self {
         CodeEditor { numlines, ..self }
+    }
+
+    /// Shift lines numbering by this value
+    ///
+    /// **Default: 0**
+    pub fn with_numlines_shift(self, numlines_shift: isize) -> Self {
+        CodeEditor {
+            numlines_shift,
+            ..self
+        }
+    }
+
+    /// Show lines numbering only above zero, useful for enabling numbering since nth row
+    ///
+    /// **Default: false**
+    pub fn with_numlines_only_natural(self, numlines_only_natural: bool) -> Self {
+        CodeEditor {
+            numlines_only_natural,
+            ..self
+        }
     }
 
     /// Use custom syntax for highlighting
@@ -244,21 +268,32 @@ impl CodeEditor {
         } else {
             text.lines().count()
         }
-        .max(self.rows);
-        let max_indent = total.to_string().len();
+        .max(self.rows) as isize;
+        let max_indent = total
+            .to_string()
+            .len()
+            .max(!self.numlines_only_natural as usize * self.numlines_shift.to_string().len());
         let mut counter = (1..=total)
             .map(|i| {
-                let label = i.to_string();
-                format!(
-                    "{}{label}",
-                    " ".repeat(max_indent.saturating_sub(label.len()))
-                )
+                let num = i + self.numlines_shift;
+                if num <= 0 && self.numlines_only_natural {
+                    String::new()
+                } else {
+                    let label = num.to_string();
+                    format!(
+                        "{}{label}",
+                        " ".repeat(max_indent.saturating_sub(label.len()))
+                    )
+                }
             })
             .collect::<Vec<String>>()
             .join("\n");
 
         #[allow(clippy::cast_precision_loss)]
-        let width = max_indent as f32 * self.fontsize * 0.5;
+        let width = max_indent as f32
+            * self.fontsize
+            * 0.5
+            * !(total + self.numlines_shift <= 0 && self.numlines_only_natural) as u8 as f32;
 
         let mut layouter = |ui: &egui::Ui, string: &str, _wrap_width: f32| {
             let layout_job = egui::text::LayoutJob::single_section(

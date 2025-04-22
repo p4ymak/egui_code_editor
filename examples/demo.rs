@@ -139,6 +139,8 @@ struct CodeEditorDemo {
     theme: ColorTheme,
     syntax: Syntax,
     example: bool,
+    shift: isize,
+    numlines_only_natural: bool,
 }
 impl CodeEditorDemo {
     fn new(_cc: &CreationContext) -> Self {
@@ -148,6 +150,8 @@ impl CodeEditorDemo {
             theme: ColorTheme::GRUVBOX,
             syntax: rust.syntax(),
             example: true,
+            shift: 0,
+            numlines_only_natural: false,
         }
     }
 }
@@ -192,6 +196,11 @@ impl eframe::App for CodeEditorDemo {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
+            ui.horizontal(|h| {
+                h.label("Numbering Shift");
+                h.add(egui::DragValue::new(&mut self.shift));
+                h.checkbox(&mut self.numlines_only_natural, "Only Natural Numbering");
+            });
             let mut editor = CodeEditor::default()
                 .id_source("code editor")
                 .with_rows(10)
@@ -199,6 +208,8 @@ impl eframe::App for CodeEditorDemo {
                 .with_theme(self.theme)
                 .with_syntax(self.syntax.to_owned())
                 .with_numlines(true)
+                .with_numlines_shift(self.shift)
+                .with_numlines_only_natural(self.numlines_only_natural)
                 .vscroll(true);
             editor.show(ui, &mut self.code);
 
