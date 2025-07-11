@@ -263,6 +263,8 @@ impl CodeEditor {
 
     #[cfg(feature = "egui")]
     fn numlines_show(&self, ui: &mut egui::Ui, text: &str) {
+        use egui::TextBuffer;
+
         let total = if text.ends_with('\n') || text.is_empty() {
             text.lines().count() + 1
         } else {
@@ -295,9 +297,9 @@ impl CodeEditor {
             * 0.5
             * !(total + self.numlines_shift <= 0 && self.numlines_only_natural) as u8 as f32;
 
-        let mut layouter = |ui: &egui::Ui, string: &str, _wrap_width: f32| {
+        let mut layouter = |ui: &egui::Ui, text_buffer: &dyn TextBuffer, _wrap_width: f32| {
             let layout_job = egui::text::LayoutJob::single_section(
-                string.to_string(),
+                text_buffer.as_str().to_string(),
                 egui::TextFormat::simple(
                     egui::FontId::monospace(self.fontsize),
                     self.theme.type_color(TokenType::Comment(true)),
@@ -321,6 +323,8 @@ impl CodeEditor {
     #[cfg(feature = "egui")]
     /// Show Code Editor
     pub fn show(&mut self, ui: &mut egui::Ui, text: &mut dyn egui::TextBuffer) -> TextEditOutput {
+        use egui::TextBuffer;
+
         let mut text_edit_output: Option<TextEditOutput> = None;
         let mut code_editor = |ui: &mut egui::Ui| {
             ui.horizontal_top(|h| {
@@ -331,10 +335,11 @@ impl CodeEditor {
                 egui::ScrollArea::horizontal()
                     .id_salt(format!("{}_inner_scroll", self.id))
                     .show(h, |ui| {
-                        let mut layouter = |ui: &egui::Ui, string: &str, _wrap_width: f32| {
-                            let layout_job = highlight(ui.ctx(), self, string);
-                            ui.fonts(|f| f.layout_job(layout_job))
-                        };
+                        let mut layouter =
+                            |ui: &egui::Ui, text_buffer: &dyn TextBuffer, _wrap_width: f32| {
+                                let layout_job = highlight(ui.ctx(), self, text_buffer.as_str());
+                                ui.fonts(|f| f.layout_job(layout_job))
+                            };
                         let output = egui::TextEdit::multiline(text)
                             .id_source(&self.id)
                             .lock_focus(true)
