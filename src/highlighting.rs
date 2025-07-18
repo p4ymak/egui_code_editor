@@ -238,7 +238,6 @@ use egui::text::LayoutJob;
 #[cfg(feature = "egui")]
 impl<T: Editor> egui::util::cache::ComputerMut<(&T, &str), LayoutJob> for Token {
     fn compute(&mut self, (cache, text): (&T, &str)) -> LayoutJob {
-        println!("{text:?}");
         self.highlight(cache, text)
     }
 }
