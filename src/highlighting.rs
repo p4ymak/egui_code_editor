@@ -1,7 +1,7 @@
 #[cfg(feature = "editor")]
 use super::Editor;
 
-use super::syntax::{Syntax, TokenType, QUOTES, SEPARATORS};
+use super::syntax::{QUOTES, SEPARATORS, Syntax, TokenType};
 use std::mem;
 
 #[derive(Default, Debug, PartialEq, PartialOrd, Eq, Ord)]
@@ -73,12 +73,20 @@ impl Token {
     pub fn highlight<T: Editor>(&mut self, editor: &T, text: &str) -> LayoutJob {
         *self = Token::default();
         let mut job = LayoutJob::default();
+
+        let mut line = 0;
+
         for c in text.chars() {
             for token in self.automata(c, editor.syntax()) {
-                editor.append(&mut job, &token);
+                editor.append(&mut job, &token, line);
+            }
+
+            if c == '\n' {
+                line += 1;
             }
         }
-        editor.append(&mut job, self);
+
+        editor.append(&mut job, self, usize::MAX);
         job
     }
 
@@ -246,6 +254,6 @@ impl<T: Editor> egui::util::cache::ComputerMut<(&T, &str), LayoutJob> for Token 
 pub type HighlightCache = egui::util::cache::FrameCache<LayoutJob, Token>;
 
 #[cfg(feature = "egui")]
-pub fn highlight<T: Editor>(ctx: &egui::Context, cache: &T, text: &str) -> LayoutJob {
+pub fn highlight<T: Editor>(ctx: &egui::Context, cache: &T, text: &str) -> egui::text::LayoutJob {
     ctx.memory_mut(|mem| mem.caches.cache::<HighlightCache>().get((cache, text)))
 }

@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 pub mod asm;
+pub mod javascript;
 pub mod lua;
 pub mod python;
 pub mod rust;
