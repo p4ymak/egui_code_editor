@@ -1,4 +1,4 @@
-use super::Syntax;
+use super::{DEFAULT_QUOTES, Syntax};
 use std::collections::BTreeSet;
 
 impl Syntax {
@@ -7,6 +7,7 @@ impl Syntax {
             language: "Shell",
             case_sensitive: true,
             comment: "#",
+            quotes: DEFAULT_QUOTES.into(),
             hyperlinks: BTreeSet::from(["http"]),
             keywords: BTreeSet::from([
                 "echo", "read", "set", "unset", "readonly", "shift", "export", "if", "fi", "else",

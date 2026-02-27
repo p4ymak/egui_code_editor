@@ -9,6 +9,23 @@ fn numeric_float() {
 }
 
 #[test]
+fn qustom_quotes() {
+    assert_eq!(
+        Token::default().tokens(
+            &Syntax::default().with_quotes(['@']),
+            "@string@ \"punctuation\""
+        ),
+        [
+            Token::new(TokenType::Str('@'), "@string@"),
+            Token::new(TokenType::Whitespace(' '), " "),
+            Token::new(TokenType::Punctuation('"'), "\""),
+            Token::new(TokenType::Literal, "punctuation"),
+            Token::new(TokenType::Punctuation('"'), "\""),
+        ]
+    );
+}
+
+#[test]
 fn numeric_float_desription() {
     assert_eq!(
         Token::default().tokens(&Syntax::default(), "3.14_f32"),
