@@ -1,4 +1,4 @@
-use super::Syntax;
+use super::{DEFAULT_QUOTES, Syntax};
 use std::collections::BTreeSet;
 
 impl Syntax {
@@ -8,6 +8,7 @@ impl Syntax {
             case_sensitive: true,
             comment: "#",
             comment_multiline: [r#"'''"#, r#"'''"#],
+            quotes: DEFAULT_QUOTES.into(),
             hyperlinks: BTreeSet::from(["http"]),
             keywords: BTreeSet::from([
                 "and", "as", "assert", "break", "class", "continue", "def", "del", "elif", "else",

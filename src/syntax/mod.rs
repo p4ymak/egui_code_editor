@@ -10,7 +10,10 @@ use std::collections::BTreeSet;
 use std::hash::{Hash, Hasher};
 
 pub const SEPARATORS: [char; 1] = ['_'];
-pub const QUOTES: [char; 3] = ['\'', '"', '`'];
+pub const DEFAULT_QUOTES: [char; 3] = ['\'', '"', '`'];
+pub const WHITESPACE_SPACE: char = ' ';
+pub const WHITESPACE_TAB: char = '\t';
+pub const WHITESPACE_NEWLINE: char = '\n';
 
 type MultiLine = bool;
 type Float = bool;
@@ -67,10 +70,10 @@ impl std::fmt::Debug for TokenType {
             TokenType::Type => name.push_str("Type"),
             TokenType::Whitespace(c) => {
                 name.push_str("Whitespace");
-                match c {
-                    ' ' => name.push_str(" Space"),
-                    '\t' => name.push_str(" Tab"),
-                    '\n' => name.push_str(" New Line"),
+                match *c {
+                    WHITESPACE_SPACE => name.push_str(" Space"),
+                    WHITESPACE_TAB => name.push_str(" Tab"),
+                    WHITESPACE_NEWLINE => name.push_str(" New Line"),
                     _ => (),
                 };
             }
@@ -83,7 +86,6 @@ impl From<char> for TokenType {
     fn from(c: char) -> Self {
         match c {
             c if c.is_whitespace() => TokenType::Whitespace(c),
-            c if QUOTES.contains(&c) => TokenType::Str(c),
             c if c.is_numeric() => TokenType::Numeric(false),
             c if c.is_alphabetic() || SEPARATORS.contains(&c) => TokenType::Literal,
             c if c.is_ascii_punctuation() => TokenType::Punctuation(c),
@@ -99,6 +101,7 @@ pub struct Syntax {
     pub case_sensitive: bool,
     pub comment: &'static str,
     pub comment_multiline: [&'static str; 2],
+    pub quotes: BTreeSet<char>,
     pub hyperlinks: BTreeSet<&'static str>,
     pub keywords: BTreeSet<&'static str>,
     pub types: BTreeSet<&'static str>,
@@ -118,6 +121,7 @@ impl Syntax {
     pub fn new(language: &'static str) -> Self {
         Syntax {
             language,
+            quotes: DEFAULT_QUOTES.into(),
             ..Default::default()
         }
     }
@@ -133,6 +137,12 @@ impl Syntax {
     pub fn with_comment_multiline(self, comment_multiline: [&'static str; 2]) -> Self {
         Syntax {
             comment_multiline,
+            ..self
+        }
+    }
+    pub fn with_quotes<T: Into<BTreeSet<char>>>(self, quotes: T) -> Self {
+        Syntax {
+            quotes: quotes.into(),
             ..self
         }
     }
@@ -200,6 +210,7 @@ impl Syntax {
             case_sensitive: false,
             comment,
             comment_multiline: [comment; 2],
+            quotes: DEFAULT_QUOTES.into(),
             hyperlinks: BTreeSet::new(),
             keywords: BTreeSet::new(),
             types: BTreeSet::new(),
