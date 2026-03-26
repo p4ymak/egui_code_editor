@@ -247,5 +247,10 @@ pub type HighlightCache = egui::util::cache::FrameCache<LayoutJob, Token>;
 
 #[cfg(feature = "egui")]
 pub fn highlight<T: Editor>(ctx: &egui::Context, cache: &T, text: &str) -> LayoutJob {
-    ctx.memory_mut(|mem| mem.caches.cache::<HighlightCache>().get((cache, text)))
+    ctx.memory_mut(|mem| {
+        mem.caches
+            .cache::<HighlightCache>()
+            .get((cache, text))
+            .to_owned()
+    })
 }
