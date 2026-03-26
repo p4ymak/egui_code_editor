@@ -166,8 +166,8 @@ impl CodeEditorDemo {
     }
 }
 impl eframe::App for CodeEditorDemo {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::SidePanel::left("theme_picker").show(ctx, |ui| {
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        egui::Panel::left("theme_picker").show_inside(ui, |ui| {
             ui.heading("Theme");
             egui::ScrollArea::both().show(ui, |ui| {
                 for theme in THEMES.iter() {
@@ -176,16 +176,16 @@ impl eframe::App for CodeEditorDemo {
                         .clicked()
                     {
                         if theme.is_dark() {
-                            ctx.set_visuals(egui::Visuals::dark());
+                            ui.set_visuals(egui::Visuals::dark());
                         } else {
-                            ctx.set_visuals(egui::Visuals::light());
+                            ui.set_visuals(egui::Visuals::light());
                         }
                     };
                 }
             });
         });
 
-        egui::SidePanel::right("syntax_picker").show(ctx, |ui| {
+        egui::Panel::right("syntax_picker").show_inside(ui, |ui| {
             ui.horizontal(|h| {
                 h.heading("Syntax");
                 h.checkbox(&mut self.example, "Example");
@@ -207,7 +207,7 @@ impl eframe::App for CodeEditorDemo {
             });
         });
 
-        egui::CentralPanel::default().show(ctx, |ui| {
+        egui::CentralPanel::default().show_inside(ui, |ui| {
             ui.horizontal(|h| {
                 h.label("Numbering Shift");
                 h.add(egui::DragValue::new(&mut self.shift));

@@ -1,12 +1,11 @@
 mod trie;
 
-use std::collections::BTreeSet;
-
 use crate::{ColorTheme, Syntax, Token, TokenType, format_token};
 use egui::{
     Event, Frame, Modifiers, Sense, Stroke, TextBuffer, text_edit::TextEditOutput,
     text_selection::text_cursor_state::ccursor_previous_word,
 };
+use std::collections::BTreeSet;
 use trie::Trie;
 
 impl From<&Syntax> for Trie {
@@ -194,7 +193,7 @@ impl Completer {
                     cursor_rect,
                     editor_output.response.layer_id,
                 )
-                .frame(Frame::popup(&ctx.style()).fill(theme.bg()))
+                .frame(Frame::popup(&ctx.global_style()).fill(theme.bg()))
                 .sense(Sense::empty())
                 .show(|ui| {
                     ui.response().sense = Sense::empty();
