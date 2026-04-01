@@ -341,32 +341,34 @@ impl CodeEditor {
     /// Show Code Editor
     pub fn show(&mut self, ui: &mut egui::Ui, text: &mut dyn egui::TextBuffer) -> TextEditOutput {
         use egui::TextBuffer;
-
         let mut text_edit_output: Option<TextEditOutput> = None;
         let mut code_editor = |ui: &mut egui::Ui| {
-            ui.horizontal_top(|h| {
-                self.theme.modify_style(h, self.fontsize);
-                if self.numlines {
-                    self.numlines_show(h, text.as_str());
-                }
-                egui::ScrollArea::horizontal()
-                    .id_salt(format!("{}_inner_scroll", self.id))
-                    .show(h, |ui| {
-                        let mut layouter =
-                            |ui: &egui::Ui, text_buffer: &dyn TextBuffer, _wrap_width: f32| {
-                                let layout_job = highlight(ui.ctx(), self, text_buffer.as_str());
-                                ui.fonts_mut(|f| f.layout_job(layout_job))
-                            };
-                        let output = egui::TextEdit::multiline(text)
-                            .id_source(&self.id)
-                            .lock_focus(true)
-                            .desired_rows(self.rows)
-                            .frame(egui::Frame::NONE)
-                            .desired_width(self.desired_width)
-                            .layouter(&mut layouter)
-                            .show(ui);
-                        text_edit_output = Some(output);
-                    });
+            let frame = egui::Frame::new().fill(self.theme.bg());
+            frame.show(ui, |ui| {
+                ui.horizontal_top(|h| {
+                    self.theme.modify_style(h, self.fontsize);
+                    if self.numlines {
+                        self.numlines_show(h, text.as_str());
+                    }
+                    egui::ScrollArea::horizontal()
+                        .id_salt(format!("{}_inner_scroll", self.id))
+                        .show(h, |ui| {
+                            let mut layouter =
+                                |ui: &egui::Ui, text_buffer: &dyn TextBuffer, _wrap_width: f32| {
+                                    let layout_job =
+                                        highlight(ui.ctx(), self, text_buffer.as_str());
+                                    ui.fonts_mut(|f| f.layout_job(layout_job))
+                                };
+                            let output = egui::TextEdit::multiline(text)
+                                .id_source(&self.id)
+                                .lock_focus(true)
+                                .desired_rows(self.rows)
+                                .desired_width(self.desired_width)
+                                .layouter(&mut layouter)
+                                .show(ui);
+                            text_edit_output = Some(output);
+                        });
+                });
             });
         };
         if self.vscroll {

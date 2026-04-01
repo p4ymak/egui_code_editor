@@ -86,11 +86,14 @@ impl ColorTheme {
     #[cfg(feature = "egui")]
     pub fn modify_style(&self, ui: &mut egui::Ui, fontsize: f32) {
         let style = ui.style_mut();
-        style.visuals.widgets.noninteractive.bg_fill = self.bg();
-        style.visuals.window_fill = self.bg();
+        let bg = self.bg();
+        style.visuals.widgets.noninteractive.bg_fill = bg;
+        style.visuals.window_fill = bg;
+        style.visuals.panel_fill = bg;
+        style.visuals.faint_bg_color = bg;
+        style.visuals.extreme_bg_color = bg;
         style.visuals.selection.stroke.color = self.cursor();
         style.visuals.selection.bg_fill = self.selection();
-        style.visuals.extreme_bg_color = self.bg();
         style.override_font_id = Some(egui::FontId::monospace(fontsize));
         style.visuals.text_cursor.stroke.width = fontsize * 0.1;
     }
