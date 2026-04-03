@@ -183,7 +183,7 @@ impl CodeEditor {
         }
     }
 
-    /// Show or hide lines numbering
+    /// Show or hide lines numbering. If false allows text to wrap.
     ///
     /// **Default: true**
     pub fn with_numlines(self, numlines: bool) -> Self {
@@ -354,9 +354,13 @@ impl CodeEditor {
                         .id_salt(format!("{}_inner_scroll", self.id))
                         .show(h, |ui| {
                             let mut layouter =
-                                |ui: &egui::Ui, text_buffer: &dyn TextBuffer, _wrap_width: f32| {
-                                    let layout_job =
+                                |ui: &egui::Ui, text_buffer: &dyn TextBuffer, wrap_width: f32| {
+                                    let mut layout_job =
                                         highlight(ui.ctx(), self, text_buffer.as_str());
+                                    if !self.numlines {
+                                        layout_job.wrap =
+                                            egui::text::TextWrapping::wrap_at_width(wrap_width);
+                                    }
                                     ui.fonts_mut(|f| f.layout_job(layout_job))
                                 };
                             let output = egui::TextEdit::multiline(text)
