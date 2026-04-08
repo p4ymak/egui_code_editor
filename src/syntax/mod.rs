@@ -184,21 +184,21 @@ impl Syntax {
         if self.case_sensitive {
             self.keywords.contains(&word)
         } else {
-            self.keywords.contains(word.to_ascii_uppercase().as_str())
+            self.keywords.contains(word.to_ascii_lowercase().as_str())
         }
     }
     pub fn is_type(&self, word: &str) -> bool {
         if self.case_sensitive {
             self.types.contains(&word)
         } else {
-            self.types.contains(word.to_ascii_uppercase().as_str())
+            self.types.contains(word.to_ascii_lowercase().as_str())
         }
     }
     pub fn is_special(&self, word: &str) -> bool {
         if self.case_sensitive {
             self.special.contains(&word)
         } else {
-            self.special.contains(word.to_ascii_uppercase().as_str())
+            self.special.contains(word.to_ascii_lowercase().as_str())
         }
     }
 }
