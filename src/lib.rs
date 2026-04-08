@@ -112,6 +112,7 @@ pub struct CodeEditor {
     vscroll: bool,
     stick_to_bottom: bool,
     desired_width: f32,
+    wrap: bool,
 }
 
 #[cfg(feature = "editor")]
@@ -140,6 +141,7 @@ impl Default for CodeEditor {
             vscroll: true,
             stick_to_bottom: false,
             desired_width: f32::INFINITY,
+            wrap: false,
         }
     }
 }
@@ -183,7 +185,7 @@ impl CodeEditor {
         }
     }
 
-    /// Show or hide lines numbering. If false allows text to wrap.
+    /// Show or hide lines numbering. If true ignores text wrapping mode.
     ///
     /// **Default: true**
     pub fn with_numlines(self, numlines: bool) -> Self {
@@ -210,6 +212,12 @@ impl CodeEditor {
         }
     }
 
+    /// Allows editing text to wrap. Ignored if numlines enabled.
+    ///
+    /// **Default: false**
+    pub fn with_wrap(self, wrap: bool) -> Self {
+        CodeEditor { wrap, ..self }
+    }
     /// Use custom syntax for highlighting
     ///
     /// **Default: Rust**
@@ -357,7 +365,7 @@ impl CodeEditor {
                                 |ui: &egui::Ui, text_buffer: &dyn TextBuffer, wrap_width: f32| {
                                     let mut layout_job =
                                         highlight(ui.ctx(), self, text_buffer.as_str());
-                                    if !self.numlines {
+                                    if !self.numlines && self.wrap {
                                         layout_job.wrap =
                                             egui::text::TextWrapping::wrap_at_width(wrap_width);
                                     }

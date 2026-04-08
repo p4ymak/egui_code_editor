@@ -24,20 +24,26 @@ pub const DEFAULT_THEMES: [ColorTheme; 8] = [
 ];
 
 #[cfg(feature = "egui")]
-fn color_from_hex(hex: &str) -> Option<Color32> {
-    if hex == "none" {
-        return Some(Color32::from_rgba_premultiplied(255, 0, 255, 0));
+pub const fn color_from_hex(hex: &str) -> Color32 {
+    let (r_s, rest) = hex.split_at(2);
+    let (g_s, b_s) = rest.split_at(2);
+
+    let r = hex_u8(r_s).expect(hex);
+    let g = hex_u8(g_s).expect(hex);
+    let b = hex_u8(b_s).expect(hex);
+
+    Color32::from_rgb(r, g, b)
+}
+
+const fn hex_u8(hex: &str) -> Option<u8> {
+    match u8::from_str_radix(hex, 16) {
+        Ok(v) => Some(v),
+        Err(_) => None,
     }
-    let rgb = (1..hex.len())
-        .step_by(2)
-        .filter_map(|i| u8::from_str_radix(&hex[i..i + 2], 16).ok())
-        .collect::<Vec<u8>>();
-    let color = Color32::from_rgb(*rgb.first()?, *rgb.get(1)?, *rgb.get(2)?);
-    Some(color)
 }
 
 #[derive(Hash, Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-/// Colors in hexadecimal notation as used in HTML and CSS.
+/// Colors in hexadecimal notation without '#'.
 pub struct ColorTheme {
     pub name: &'static str,
     pub dark: bool,
@@ -70,17 +76,17 @@ impl ColorTheme {
 
     #[cfg(feature = "egui")]
     pub fn bg(&self) -> Color32 {
-        color_from_hex(self.bg).unwrap_or(ERROR_COLOR)
+        color_from_hex(self.bg)
     }
 
     #[cfg(feature = "egui")]
     pub fn cursor(&self) -> Color32 {
-        color_from_hex(self.cursor).unwrap_or(ERROR_COLOR)
+        color_from_hex(self.cursor)
     }
 
     #[cfg(feature = "egui")]
     pub fn selection(&self) -> Color32 {
-        color_from_hex(self.selection).unwrap_or(ERROR_COLOR)
+        color_from_hex(self.selection)
     }
 
     #[cfg(feature = "egui")]
@@ -129,7 +135,6 @@ impl ColorTheme {
             TokenType::Type => color_from_hex(self.types),
             TokenType::Whitespace(_) | TokenType::Unknown => color_from_hex(self.comments),
         }
-        .unwrap_or(ERROR_COLOR)
     }
 
     pub fn monocolor(

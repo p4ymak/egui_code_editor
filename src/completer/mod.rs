@@ -2,8 +2,9 @@ mod trie;
 
 use crate::{ColorTheme, Syntax, Token, TokenType, format_token};
 use egui::{
-    Event, Frame, Modifiers, Sense, Stroke, TextBuffer, text_edit::TextEditOutput,
-    text_selection::text_cursor_state::ccursor_previous_word,
+    Event, Frame, Modifiers, Sense, Stroke, TextBuffer,
+    text_edit::TextEditOutput,
+    text_selection::text_cursor_state::{ccursor_previous_word, find_line_start},
 };
 use std::collections::BTreeSet;
 use trie::Trie;
@@ -39,6 +40,7 @@ impl From<&Syntax> for Trie {
 pub struct Completer {
     prefix: String,
     cursor: usize,
+    indent: Option<String>,
     ignore_cursor: Option<usize>,
     trie_syntax: Trie,
     trie_user: Option<Trie>,
@@ -47,13 +49,21 @@ pub struct Completer {
 }
 
 impl Completer {
-    /// Completer shoud be stored somewhere in your App struct.
+    /// Completer should be stored somewhere in your App struct.
     pub fn new_with_syntax(syntax: &Syntax) -> Self {
         Completer {
             trie_syntax: Trie::from(syntax),
             ..Default::default()
         }
     }
+    /// Completer will preserve indentation for next lines.
+    pub fn with_auto_indent(self) -> Self {
+        Completer {
+            indent: Some(String::new()),
+            ..self
+        }
+    }
+    /// Completer will have second dictionary for words besides Syntax.
     pub fn with_user_words(self) -> Self {
         Completer {
             trie_user: Some(Trie::default()),
@@ -67,6 +77,16 @@ impl Completer {
     /// If using Completer without CodeEditor this method should be called before text-editing widget.
     /// Up/Down arrows for selection, Tab for completion, Esc for hiding
     pub fn handle_input(&mut self, ctx: &egui::Context) {
+        if let Some(indent) = self.indent.as_mut()
+            && !indent.is_empty()
+        {
+            ctx.input_mut(|i| {
+                if i.consume_key(Modifiers::NONE, egui::Key::Enter) {
+                    i.events
+                        .push(Event::Paste(format!("\n{}", std::mem::take(indent))))
+                }
+            });
+        }
         if self.prefix.is_empty() {
             return;
         }
@@ -170,6 +190,17 @@ impl Completer {
                 .nth(cursor.index)
                 .is_none_or(|c| !(c.is_alphanumeric() || c == '_'))
                 || (range.secondary.index > range.primary.index);
+
+            // Preserve Line indentation
+            if let Some(indent) = self.indent.as_mut() {
+                let line_start = find_line_start(galley.text(), cursor);
+                *indent = galley
+                    .text()
+                    .char_range(line_start.index..cursor.index)
+                    .chars()
+                    .take_while(|c| c.is_whitespace())
+                    .collect();
+            }
 
             self.prefix = if next_char_allows {
                 let prefix = galley

@@ -158,7 +158,9 @@ impl CodeEditorDemo {
             text: String::default(),
             theme: ColorTheme::GRUVBOX,
             syntax: rust.syntax(),
-            completer: Completer::new_with_syntax(&rust.syntax()).with_user_words(),
+            completer: Completer::new_with_syntax(&rust.syntax())
+                .with_auto_indent()
+                .with_user_words(),
             example: true,
             shift: 0,
             numlines_only_natural: false,

@@ -10,6 +10,8 @@ Text Editor Widget for [egui](https://github.com/emilk/egui) with numbered lines
 
 Offers completions from the syntax dictionary and optionally from words previously entered by the user.
 
+Optionally enables auto-indent for new lines.
+
 *Usage:*
 - UP/DOWN Arrows: Select
 - TAB: Complete
