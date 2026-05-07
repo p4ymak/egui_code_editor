@@ -2,9 +2,8 @@ mod trie;
 
 use crate::{ColorTheme, Syntax, Token, TokenType, format_token};
 use egui::{
-    Event, Frame, Modifiers, Sense, Stroke, TextBuffer,
-    text_edit::TextEditOutput,
-    text_selection::text_cursor_state::{ccursor_previous_word, find_line_start},
+    Event, Frame, Modifiers, Sense, Stroke, TextBuffer, text::CCursor, text_edit::TextEditOutput,
+    text_selection::text_cursor_state::ccursor_previous_word,
 };
 use std::collections::BTreeSet;
 use trie::Trie;
@@ -193,7 +192,7 @@ impl Completer {
 
             // Preserve Line indentation
             if let Some(indent) = self.indent.as_mut() {
-                let line_start = find_line_start(galley.text(), cursor);
+                let line_start = find_line_start_saturated(galley.text(), cursor);
                 *indent = galley
                     .text()
                     .char_range(line_start.index..cursor.index)
@@ -290,5 +289,20 @@ impl Completer {
         let mut output = widget(ui);
         self.show(syntax, theme, fontsize, &mut output);
         output
+    }
+}
+
+pub fn find_line_start_saturated(text: &str, current_index: CCursor) -> CCursor {
+    let chars_count = text.chars().count();
+
+    let position = text
+        .chars()
+        .rev()
+        .skip(chars_count.saturating_sub(current_index.index))
+        .position(|x| x == '\n');
+
+    match position {
+        Some(pos) => CCursor::new(current_index.index.saturating_sub(pos)),
+        None => CCursor::new(0),
     }
 }
