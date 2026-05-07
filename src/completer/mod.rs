@@ -292,6 +292,7 @@ impl Completer {
     }
 }
 
+// TODO egui 0.34.2 already changed this function, replace in next release
 pub fn find_line_start_saturated(text: &str, current_index: CCursor) -> CCursor {
     let chars_count = text.chars().count();
 
