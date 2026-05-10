@@ -270,8 +270,11 @@ impl CodeEditor {
     }
 
     pub fn hint_text<S: Into<String>>(self, hint_text: S) -> Self {
+        let hint_text = hint_text.into();
+        let rows = self.rows.max(hint_text.lines().count());
         CodeEditor {
-            hint_text: Some(hint_text.into()),
+            hint_text: Some(hint_text),
+            rows,
             ..self
         }
     }
@@ -373,31 +376,32 @@ impl CodeEditor {
                         .show(h, |ui| {
                             let mut layouter =
                                 |ui: &egui::Ui, text_buffer: &dyn TextBuffer, wrap_width: f32| {
-                                    let mut layout_job =
-                                        highlight(ui.ctx(), self, text_buffer.as_str());
+                                    let text_str = text_buffer.as_str();
+                                    let mut layout_job = highlight(ui.ctx(), self, text_str);
+
+                                    if let Some(hint) = self.hint_text.as_ref()
+                                        && text_str.is_empty()
+                                    {
+                                        layout_job = LayoutJob::simple(
+                                            hint.to_string(),
+                                            egui::FontId::monospace(self.fontsize),
+                                            self.theme.type_color(TokenType::Comment(true)),
+                                            f32::MAX,
+                                        );
+                                    }
                                     if !self.numlines && self.wrap {
                                         layout_job.wrap =
                                             egui::text::TextWrapping::wrap_at_width(wrap_width);
                                     }
                                     ui.fonts_mut(|f| f.layout_job(layout_job))
                                 };
-                            let mut text_edit = egui::TextEdit::multiline(text)
+
+                            let text_edit = egui::TextEdit::multiline(text)
                                 .id_source(&self.id)
                                 .lock_focus(true)
                                 .desired_rows(self.rows)
                                 .desired_width(self.desired_width)
                                 .layouter(&mut layouter);
-                            if let Some(hint) = self.hint_text.as_ref() {
-                                use egui::FontId;
-
-                                let job = LayoutJob::simple(
-                                    hint.to_string(),
-                                    FontId::monospace(self.fontsize),
-                                    ui.visuals().weak_text_color(),
-                                    f32::MAX,
-                                );
-                                text_edit = text_edit.hint_text(job);
-                            }
 
                             let output = text_edit.show(ui);
                             text_edit_output = Some(output);
