@@ -45,6 +45,7 @@ pub struct Completer {
     trie_user: Option<Trie>,
     variant_id: usize,
     completions: BTreeSet<String>,
+    pub text_edit_id: Option<egui::Id>,
 }
 
 impl Completer {
@@ -76,6 +77,8 @@ impl Completer {
     /// If using Completer without CodeEditor this method should be called before text-editing widget.
     /// Up/Down arrows for selection, Tab for completion, Esc for hiding
     pub fn handle_input(&mut self, ctx: &egui::Context) {
+        ctx.memory_mut(|m| m.move_focus(egui::FocusDirection::None));
+
         if let Some(indent) = self.indent.as_mut()
             && !indent.is_empty()
         {
@@ -107,31 +110,38 @@ impl Completer {
             return;
         }
         let last = self.completions.len().saturating_sub(1);
-        ctx.input_mut(|i| {
-            if i.consume_key(Modifiers::NONE, egui::Key::Escape) {
-                self.ignore_cursor = Some(self.cursor);
-            } else if i.consume_key(Modifiers::NONE, egui::Key::ArrowDown) {
-                self.variant_id = if self.variant_id == last {
-                    0
-                } else {
-                    self.variant_id.saturating_add(1).min(last)
-                };
-            } else if i.consume_key(Modifiers::NONE, egui::Key::ArrowUp) {
-                self.variant_id = if self.variant_id == 0 {
-                    last
-                } else {
-                    self.variant_id.saturating_sub(1)
-                };
-            } else if i.consume_key(Modifiers::NONE, egui::Key::Tab) {
-                let completion = self
-                    .completions
-                    .iter()
-                    .nth(self.variant_id)
-                    .map(String::from)
-                    .unwrap_or_default();
-                i.events.push(Event::Paste(completion));
+        if ctx.input_mut(|i| i.consume_key(Modifiers::NONE, egui::Key::Escape)) {
+            self.ignore_cursor = Some(self.cursor);
+            if let Some(id) = self.text_edit_id {
+                ctx.memory_mut(|m| {
+                    m.request_focus(id);
+                });
             }
-        });
+        } else {
+            ctx.input_mut(|i| {
+                if i.consume_key(Modifiers::NONE, egui::Key::ArrowDown) {
+                    self.variant_id = if self.variant_id == last {
+                        0
+                    } else {
+                        self.variant_id.saturating_add(1).min(last)
+                    };
+                } else if i.consume_key(Modifiers::NONE, egui::Key::ArrowUp) {
+                    self.variant_id = if self.variant_id == 0 {
+                        last
+                    } else {
+                        self.variant_id.saturating_sub(1)
+                    };
+                } else if i.consume_key(Modifiers::NONE, egui::Key::Tab) {
+                    let completion = self
+                        .completions
+                        .iter()
+                        .nth(self.variant_id)
+                        .map(String::from)
+                        .unwrap_or_default();
+                    i.events.push(Event::Paste(completion));
+                }
+            });
+        }
     }
 
     /// If using Completer without CodeEditor this method should be called after text-editing widget as it uses &mut TextEditOutput
@@ -142,10 +152,11 @@ impl Completer {
         fontsize: f32,
         editor_output: &mut TextEditOutput,
     ) {
+        let ctx = editor_output.response.ctx.clone();
         if !editor_output.response.has_focus() {
             return;
         }
-        let ctx = editor_output.response.ctx.clone();
+
         let galley = &editor_output.galley;
 
         if editor_output.response.changed() {
@@ -224,6 +235,7 @@ impl Completer {
                     cursor_rect,
                     editor_output.response.layer_id,
                 )
+                .kind(egui::PopupKind::Tooltip)
                 .frame(Frame::popup(&ctx.global_style()).fill(theme.bg()))
                 .sense(Sense::empty())
                 .show(|ui| {
