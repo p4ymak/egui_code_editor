@@ -379,16 +379,6 @@ impl CodeEditor {
                                     let text_str = text_buffer.as_str();
                                     let mut layout_job = highlight(ui.ctx(), self, text_str);
 
-                                    if let Some(hint) = self.hint_text.as_ref()
-                                        && text_str.is_empty()
-                                    {
-                                        layout_job = LayoutJob::simple(
-                                            hint.to_string(),
-                                            egui::FontId::monospace(self.fontsize),
-                                            self.theme.type_color(TokenType::Comment(true)),
-                                            f32::MAX,
-                                        );
-                                    }
                                     if !self.numlines && self.wrap {
                                         layout_job.wrap =
                                             egui::text::TextWrapping::wrap_at_width(wrap_width);
@@ -396,13 +386,15 @@ impl CodeEditor {
                                     ui.fonts_mut(|f| f.layout_job(layout_job))
                                 };
 
-                            let text_edit = egui::TextEdit::multiline(text)
+                            let mut text_edit = egui::TextEdit::multiline(text)
                                 .id_source(&self.id)
                                 .lock_focus(true)
                                 .desired_rows(self.rows)
                                 .desired_width(self.desired_width)
                                 .layouter(&mut layouter);
-
+                            if let Some(hint) = self.hint_text.as_ref() {
+                                text_edit = text_edit.hint_text(hint);
+                            }
                             let output = text_edit.show(ui);
                             text_edit_output = Some(output);
                         });

@@ -175,7 +175,7 @@ impl Completer {
         let cursor_range = editor_output.state.cursor.char_range();
         if let Some(range) = cursor_range {
             let mut cursor = range.primary;
-            cursor.index = cursor.index.min(galley.num_indices);
+            cursor.index = cursor.index.min(galley.job.text.chars().count());
             let cursor_pos_in_galley = galley.pos_from_cursor(cursor);
             let cursor_rect =
                 cursor_pos_in_galley.translate(editor_output.response.rect.left_top().to_vec2());
