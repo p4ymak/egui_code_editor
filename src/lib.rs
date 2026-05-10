@@ -388,7 +388,15 @@ impl CodeEditor {
                                 .desired_width(self.desired_width)
                                 .layouter(&mut layouter);
                             if let Some(hint) = self.hint_text.as_ref() {
-                                text_edit = text_edit.hint_text(hint);
+                                use egui::FontId;
+
+                                let job = LayoutJob::simple(
+                                    hint.to_string(),
+                                    FontId::monospace(self.fontsize),
+                                    ui.visuals().weak_text_color(),
+                                    f32::MAX,
+                                );
+                                text_edit = text_edit.hint_text(job);
                             }
 
                             let output = text_edit.show(ui);
