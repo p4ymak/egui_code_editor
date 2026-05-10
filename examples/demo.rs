@@ -225,6 +225,7 @@ impl eframe::App for CodeEditorDemo {
                 .with_numlines(true)
                 .with_numlines_shift(self.shift)
                 .with_numlines_only_natural(self.numlines_only_natural)
+                .hint_text("Hint text if Editor is empty")
                 .vscroll(true);
 
             editor.show_with_completer(ui, &mut self.code, &mut self.completer);

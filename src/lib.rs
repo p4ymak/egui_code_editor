@@ -113,6 +113,7 @@ pub struct CodeEditor {
     stick_to_bottom: bool,
     desired_width: f32,
     wrap: bool,
+    hint_text: Option<String>,
 }
 
 #[cfg(feature = "editor")]
@@ -142,6 +143,7 @@ impl Default for CodeEditor {
             stick_to_bottom: false,
             desired_width: f32::INFINITY,
             wrap: false,
+            hint_text: None,
         }
     }
 }
@@ -267,6 +269,13 @@ impl CodeEditor {
         }
     }
 
+    pub fn hint_text<S: Into<String>>(self, hint_text: S) -> Self {
+        CodeEditor {
+            hint_text: Some(hint_text.into()),
+            ..self
+        }
+    }
+
     #[cfg(feature = "egui")]
     pub fn format_token(&self, ty: TokenType) -> egui::text::TextFormat {
         format_token(&self.theme, self.fontsize, ty)
@@ -371,13 +380,17 @@ impl CodeEditor {
                                     }
                                     ui.fonts_mut(|f| f.layout_job(layout_job))
                                 };
-                            let output = egui::TextEdit::multiline(text)
+                            let mut text_edit = egui::TextEdit::multiline(text)
                                 .id_source(&self.id)
                                 .lock_focus(true)
                                 .desired_rows(self.rows)
                                 .desired_width(self.desired_width)
-                                .layouter(&mut layouter)
-                                .show(ui);
+                                .layouter(&mut layouter);
+                            if let Some(hint) = self.hint_text.as_ref() {
+                                text_edit = text_edit.hint_text(hint);
+                            }
+
+                            let output = text_edit.show(ui);
                             text_edit_output = Some(output);
                         });
                 });
