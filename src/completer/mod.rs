@@ -160,7 +160,7 @@ impl Completer {
         let galley = &editor_output.galley;
 
         if editor_output.response.changed() {
-            // Update Competer Dictionary
+            // Update Completer Dictionary
             if let Some(trie_user) = self.trie_user.as_mut() {
                 trie_user.clear();
                 Token::default()
