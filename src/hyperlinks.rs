@@ -1,12 +1,14 @@
 use crate::highlighting::Links;
-use egui::{Pos2, Rect};
+use egui::{Pos2, Rect, text_edit::TextEditOutput};
 
-pub fn handle_links(
-    links: &Links,
-    galley: &std::sync::Arc<egui::Galley>,
-    ui: &egui::Ui,
-    top_left: egui::Vec2,
-) {
+pub fn handle_links(text_edit: &TextEditOutput, links: &Links) {
+    if !text_edit.response.contains_pointer() {
+        return;
+    }
+    let galley = &text_edit.galley;
+    let top_left = text_edit.galley_pos.to_vec2();
+    let ctx = &text_edit.response.ctx;
+
     let chars = galley.chars().collect::<Vec<char>>();
     links.iter().for_each(|link_range| {
         let link_start = link_range.start;
@@ -25,11 +27,11 @@ pub fn handle_links(
                 .collect::<Vec<Rect>>();
             let rects = join_cursor_rects(&cursors, top_left);
             for rect in rects {
-                if ui.pointer_hover_pos().is_some_and(|p| rect.contains(p)) {
-                    ui.set_cursor_icon(egui::CursorIcon::PointingHand);
+                if ctx.pointer_hover_pos().is_some_and(|p| rect.contains(p)) {
+                    ctx.set_cursor_icon(egui::CursorIcon::PointingHand);
 
-                    if ui.input_mut(|r| r.pointer.primary_pressed()) {
-                        ui.open_url(egui::OpenUrl {
+                    if ctx.input(|r| r.pointer.primary_pressed()) {
+                        ctx.open_url(egui::OpenUrl {
                             url: url.clone(),
                             new_tab: true,
                         });

@@ -408,9 +408,8 @@ impl CodeEditor {
                             }
                             let output = text_edit.show(ui);
 
-                            let galley = &output.galley;
                             // FIXME handle URL
-                            handle_links(&links_ranges, galley, ui, output.galley_pos.to_vec2());
+                            handle_links(&output, &links_ranges);
                             // FIXME end
 
                             text_edit_output = Some(output);
