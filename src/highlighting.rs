@@ -1,7 +1,8 @@
 #[cfg(feature = "editor")]
 use super::Editor;
 use super::syntax::{SEPARATORS, Syntax, TokenType};
-use std::mem;
+use std::{mem, ops::Range};
+pub type Links = Vec<Range<usize>>;
 
 #[derive(Default, Debug, PartialEq, PartialOrd, Eq, Ord)]
 /// Lexer and Token
@@ -39,7 +40,7 @@ impl Token {
             c if syntax.is_special(c.to_string().as_str()) => TokenType::Special,
             c if syntax.comment == c.to_string().as_str() => TokenType::Comment(false),
             c if syntax.comment_multiline[0] == c.to_string().as_str() => TokenType::Comment(true),
-            _ => TokenType::from(c),
+            _ => TokenType::from((c, syntax)),
         };
         token
     }
@@ -70,16 +71,26 @@ impl Token {
 
     #[cfg(feature = "egui")]
     /// Syntax highlighting
-    pub fn highlight<T: Editor>(&mut self, editor: &T, text: &str) -> LayoutJob {
+    pub fn highlight<T: Editor>(
+        &mut self,
+        editor: &T,
+        text: &str,
+        syntax: &Syntax,
+    ) -> (LayoutJob, Links) {
         *self = Token::default();
         let mut job = LayoutJob::default();
-        for c in text.chars() {
-            for token in self.automata(c, editor.syntax()) {
-                editor.append(&mut job, &token);
+        let mut links = Links::new();
+        let mut i: usize = 0;
+        for token in self.tokens(syntax, text) {
+            i += token.buffer().chars().count();
+            if token.ty() == TokenType::Hyperlink {
+                links.push(i.saturating_sub(token.buffer().chars().count())..i);
             }
+            editor.append(&mut job, &token);
         }
-        editor.append(&mut job, self);
-        job
+
+        // editor.append(&mut job, self);
+        (job, links)
     }
 
     /// Lexer
@@ -98,7 +109,7 @@ impl Token {
     fn automata(&mut self, c: char, syntax: &Syntax) -> Vec<Self> {
         use TokenType as Ty;
         let mut tokens = vec![];
-        match (self.ty, Ty::from(c)) {
+        match (self.ty, Ty::from((c, syntax))) {
             (Ty::Comment(false), Ty::Whitespace('\n')) => {
                 self.buffer.push(c);
                 let n = self.buffer.pop();
@@ -133,7 +144,10 @@ impl Token {
                     tokens.extend(self.drain(Ty::Punctuation(c)));
                     tokens.extend(self.push_drain(c, Ty::Unknown));
                 }
-                c if !c.is_alphanumeric() && !SEPARATORS.contains(&c) => {
+                c if !c.is_alphanumeric()
+                    && !SEPARATORS.contains(&c)
+                    && !syntax.is_word_start(&c) =>
+                {
                     tokens.extend(self.drain(self.ty));
                     self.buffer.push(c);
                     self.ty = if syntax.quotes.contains(&c) {
@@ -236,21 +250,26 @@ impl Token {
 use egui::text::LayoutJob;
 
 #[cfg(feature = "egui")]
-impl<T: Editor> egui::util::cache::ComputerMut<(&T, &str), LayoutJob> for Token {
-    fn compute(&mut self, (cache, text): (&T, &str)) -> LayoutJob {
-        self.highlight(cache, text)
+impl<T: Editor> egui::util::cache::ComputerMut<(&T, &str, &Syntax), (LayoutJob, Links)> for Token {
+    fn compute(&mut self, (cache, text, syntax): (&T, &str, &Syntax)) -> (LayoutJob, Links) {
+        self.highlight(cache, text, syntax)
     }
 }
 
 #[cfg(feature = "egui")]
-pub type HighlightCache = egui::util::cache::FrameCache<LayoutJob, Token>;
+pub type HighlightCache = egui::util::cache::FrameCache<(LayoutJob, Links), Token>;
 
 #[cfg(feature = "egui")]
-pub fn highlight<T: Editor>(ctx: &egui::Context, cache: &T, text: &str) -> LayoutJob {
+pub fn highlight<T: Editor>(
+    ctx: &egui::Context,
+    cache: &T,
+    text: &str,
+    syntax: &Syntax,
+) -> (LayoutJob, Links) {
     ctx.memory_mut(|mem| {
         mem.caches
             .cache::<HighlightCache>()
-            .get((cache, text))
+            .get((cache, text, syntax))
             .to_owned()
     })
 }

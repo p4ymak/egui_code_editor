@@ -1,3 +1,5 @@
+use crate::syntax::Patch;
+
 use super::{DEFAULT_QUOTES, Syntax};
 use std::collections::BTreeSet;
 
@@ -9,6 +11,7 @@ impl Syntax {
             comment: "--",
             comment_multiline: ["--[[", "]]"],
             quotes: DEFAULT_QUOTES.into(),
+            word_start: BTreeSet::from(['_']),
             hyperlinks: BTreeSet::from(["http"]),
             keywords: BTreeSet::from([
                 "and", "break", "do", "else", "elseif", "end", "for", "function", "if", "in",
@@ -18,6 +21,7 @@ impl Syntax {
                 "boolean", "number", "string", "function", "userdata", "thread", "table",
             ]),
             special: BTreeSet::from(["false", "nil", "true"]),
+            patch: Patch::default(),
         }
     }
 }

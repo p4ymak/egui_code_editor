@@ -1,3 +1,5 @@
+use crate::syntax::Patch;
+
 use super::{DEFAULT_QUOTES, Syntax};
 use std::collections::BTreeSet;
 
@@ -9,6 +11,7 @@ impl Syntax {
             comment: "//",
             comment_multiline: ["/*", "*/"],
             quotes: DEFAULT_QUOTES.into(),
+            word_start: BTreeSet::from(['_']),
             hyperlinks: BTreeSet::from(["http"]),
             keywords: BTreeSet::from([
                 "as", "break", "const", "continue", "crate", "else", "enum", "extern", "fn", "for",
@@ -84,6 +87,7 @@ impl Syntax {
                 "Weak",
             ]),
             special: BTreeSet::from(["Self", "static", "true", "false"]),
+            patch: Patch::default(),
         }
     }
 }

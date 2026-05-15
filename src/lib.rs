@@ -11,9 +11,8 @@
 //!   .with_rows(12)
 //!   .with_fontsize(14.0)
 //!   .with_theme(ColorTheme::GRUVBOX)
-//!   .with_syntax(Syntax::rust())
 //!   .with_numlines(true)
-//!   .show(ui, &mut self.code);
+//!   .show(ui, &self.syntax, &mut self.code);
 //! ```
 //!
 //! ## Usage as lexer without egui
@@ -55,10 +54,9 @@
 //!     .with_rows(12)
 //!     .with_fontsize(14.0)
 //!     .with_theme(self.theme)
-//!     .with_syntax(self.syntax.to_owned())
 //!     .with_numlines(true)
 //!     .vscroll(true)
-//!     .show(ui, &mut self.code);
+//!     .show(ui, &self.syntax, &mut self.code);
 //!     "#;
 //!
 //!     let syntax = Syntax::rust();
@@ -70,11 +68,15 @@
 #[cfg(feature = "egui")]
 mod completer;
 pub mod highlighting;
+#[cfg(feature = "egui")]
+mod hyperlinks;
 mod syntax;
 #[cfg(test)]
 mod tests;
 mod themes;
 
+#[cfg(feature = "egui")]
+use egui::Stroke;
 #[cfg(feature = "egui")]
 use egui::text::LayoutJob;
 #[cfg(feature = "egui")]
@@ -82,9 +84,11 @@ use egui::widgets::text_edit::TextEditOutput;
 pub use highlighting::Token;
 #[cfg(feature = "egui")]
 use highlighting::highlight;
+#[cfg(feature = "egui")]
+use hyperlinks::handle_links;
 #[cfg(feature = "editor")]
 use std::hash::{Hash, Hasher};
-pub use syntax::{Syntax, TokenType};
+pub use syntax::{Patch, Syntax, TokenType};
 pub use themes::ColorTheme;
 pub use themes::DEFAULT_THEMES;
 
@@ -94,7 +98,6 @@ pub use crate::completer::Completer;
 #[cfg(feature = "egui")]
 pub trait Editor: Hash {
     fn append(&self, job: &mut LayoutJob, token: &Token);
-    fn syntax(&self) -> &Syntax;
 }
 
 #[cfg(feature = "editor")]
@@ -103,7 +106,7 @@ pub trait Editor: Hash {
 pub struct CodeEditor {
     id: String,
     theme: ColorTheme,
-    syntax: Syntax,
+    // syntax: &'a Syntax,
     numlines: bool,
     numlines_shift: isize,
     numlines_only_natural: bool,
@@ -122,18 +125,15 @@ impl Hash for CodeEditor {
         self.theme.hash(state);
         #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
         (self.fontsize as u32).hash(state);
-        self.syntax.hash(state);
     }
 }
 
 #[cfg(feature = "editor")]
 impl Default for CodeEditor {
     fn default() -> CodeEditor {
-        let syntax = Syntax::rust();
         CodeEditor {
             id: String::from("Code Editor"),
             theme: ColorTheme::GRUVBOX,
-            syntax,
             numlines: true,
             numlines_shift: 0,
             numlines_only_natural: false,
@@ -220,12 +220,12 @@ impl CodeEditor {
     pub fn with_wrap(self, wrap: bool) -> Self {
         CodeEditor { wrap, ..self }
     }
-    /// Use custom syntax for highlighting
-    ///
-    /// **Default: Rust**
-    pub fn with_syntax(self, syntax: Syntax) -> Self {
-        CodeEditor { syntax, ..self }
-    }
+    // Use custom syntax for highlighting
+    //
+    // **Default: Rust**
+    // pub fn with_syntax(self, syntax: Syntax) -> Self {
+    // CodeEditor { syntax, ..self }
+    // }
 
     /// Turn on/off scrolling on the vertical axis.
     ///
@@ -349,18 +349,24 @@ impl CodeEditor {
         &mut self,
         ui: &mut egui::Ui,
         text: &mut dyn egui::TextBuffer,
+        syntax: &Syntax,
         completer: &mut Completer,
     ) -> TextEditOutput {
         completer.handle_input(ui.ctx());
-        let mut editor_output = self.show(ui, text);
+        let mut editor_output = self.show(ui, text, syntax);
         completer.text_edit_id = Some(editor_output.response.id);
-        completer.show(&self.syntax, &self.theme, self.fontsize, &mut editor_output);
+        completer.show(syntax, &self.theme, self.fontsize, &mut editor_output);
         editor_output
     }
 
     #[cfg(feature = "egui")]
     /// Show Code Editor
-    pub fn show(&mut self, ui: &mut egui::Ui, text: &mut dyn egui::TextBuffer) -> TextEditOutput {
+    pub fn show(
+        &mut self,
+        ui: &mut egui::Ui,
+        text: &mut dyn egui::TextBuffer,
+        syntax: &Syntax,
+    ) -> TextEditOutput {
         use egui::TextBuffer;
         let mut text_edit_output: Option<TextEditOutput> = None;
         let mut code_editor = |ui: &mut egui::Ui| {
@@ -374,10 +380,15 @@ impl CodeEditor {
                     egui::ScrollArea::horizontal()
                         .id_salt(format!("{}_inner_scroll", self.id))
                         .show(h, |ui| {
+                            use crate::highlighting::Links;
+
+                            let mut links_ranges = Links::default();
                             let mut layouter =
                                 |ui: &egui::Ui, text_buffer: &dyn TextBuffer, wrap_width: f32| {
                                     let text_str = text_buffer.as_str();
-                                    let mut layout_job = highlight(ui.ctx(), self, text_str);
+                                    let (mut layout_job, links) =
+                                        highlight(ui.ctx(), self, text_str, syntax);
+                                    links_ranges = links;
 
                                     if !self.numlines && self.wrap {
                                         layout_job.wrap =
@@ -396,6 +407,12 @@ impl CodeEditor {
                                 text_edit = text_edit.hint_text(hint);
                             }
                             let output = text_edit.show(ui);
+
+                            let galley = &output.galley;
+                            // FIXME handle URL
+                            handle_links(&links_ranges, galley, ui, output.galley_pos.to_vec2());
+                            // FIXME end
+
                             text_edit_output = Some(output);
                         });
                 });
@@ -422,15 +439,16 @@ impl Editor for CodeEditor {
             job.append(token.buffer(), 0.0, self.format_token(token.ty()));
         }
     }
-
-    fn syntax(&self) -> &Syntax {
-        &self.syntax
-    }
 }
 
 #[cfg(feature = "egui")]
 pub fn format_token(theme: &ColorTheme, fontsize: f32, ty: TokenType) -> egui::text::TextFormat {
     let font_id = egui::FontId::monospace(fontsize);
     let color = theme.type_color(ty);
-    egui::text::TextFormat::simple(font_id, color)
+
+    let mut tf = egui::text::TextFormat::simple(font_id, color);
+    if ty == TokenType::Hyperlink {
+        tf.underline = Stroke::new(fontsize * 0.1, color);
+    }
+    tf
 }

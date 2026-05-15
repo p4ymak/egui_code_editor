@@ -82,16 +82,26 @@ impl std::fmt::Debug for TokenType {
         write!(f, "{name}")
     }
 }
-impl From<char> for TokenType {
-    fn from(c: char) -> Self {
-        match c {
+impl From<(char, &Syntax)> for TokenType {
+    fn from(cs: (char, &Syntax)) -> Self {
+        match cs.0 {
             c if c.is_whitespace() => TokenType::Whitespace(c),
             c if c.is_numeric() => TokenType::Numeric(false),
-            c if c.is_alphabetic() || SEPARATORS.contains(&c) => TokenType::Literal,
+            c if c.is_alphabetic() || SEPARATORS.contains(&c) || cs.1.is_word_start(&c) => {
+                TokenType::Literal
+            }
             c if c.is_ascii_punctuation() => TokenType::Punctuation(c),
             _ => TokenType::Unknown,
         }
     }
+}
+
+#[derive(Default, Debug, Clone, PartialEq)]
+pub struct Patch {
+    pub hyperlinks: BTreeSet<String>,
+    pub keywords: BTreeSet<String>,
+    pub types: BTreeSet<String>,
+    pub special: BTreeSet<String>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -102,14 +112,28 @@ pub struct Syntax {
     pub comment: &'static str,
     pub comment_multiline: [&'static str; 2],
     pub quotes: BTreeSet<char>,
+    pub word_start: BTreeSet<char>,
     pub hyperlinks: BTreeSet<&'static str>,
     pub keywords: BTreeSet<&'static str>,
     pub types: BTreeSet<&'static str>,
     pub special: BTreeSet<&'static str>,
+    pub patch: Patch,
 }
 impl Default for Syntax {
     fn default() -> Self {
-        Syntax::rust()
+        Syntax {
+            language: "default",
+            case_sensitive: true,
+            comment: "//",
+            comment_multiline: ["/*", "*/"],
+            quotes: DEFAULT_QUOTES.into(),
+            word_start: BTreeSet::new(),
+            hyperlinks: BTreeSet::from(["http"]),
+            keywords: BTreeSet::new(),
+            types: BTreeSet::new(),
+            special: BTreeSet::new(),
+            patch: Patch::default(),
+        }
     }
 }
 impl Hash for Syntax {
@@ -146,6 +170,12 @@ impl Syntax {
             ..self
         }
     }
+    pub fn with_word_start<T: Into<BTreeSet<char>>>(self, word_start: T) -> Self {
+        Syntax {
+            word_start: word_start.into(),
+            ..self
+        }
+    }
     pub fn with_hyperlinks<T: Into<BTreeSet<&'static str>>>(self, hyperlinks: T) -> Self {
         Syntax {
             hyperlinks: hyperlinks.into(),
@@ -177,28 +207,47 @@ impl Syntax {
     pub fn comment(&self) -> &str {
         self.comment
     }
+    pub fn is_word_start(&self, c: &char) -> bool {
+        self.word_start.contains(c)
+    }
     pub fn is_hyperlink(&self, word: &str) -> bool {
         self.hyperlinks.contains(word.to_ascii_lowercase().as_str())
+            || self
+                .patch
+                .hyperlinks
+                .contains(word.to_ascii_lowercase().as_str())
     }
     pub fn is_keyword(&self, word: &str) -> bool {
         if self.case_sensitive {
-            self.keywords.contains(&word)
+            self.keywords.contains(&word) || self.patch.keywords.contains(word)
         } else {
             self.keywords.contains(word.to_ascii_uppercase().as_str())
+                || self
+                    .patch
+                    .keywords
+                    .contains(word.to_ascii_uppercase().as_str())
         }
     }
     pub fn is_type(&self, word: &str) -> bool {
         if self.case_sensitive {
-            self.types.contains(&word)
+            self.types.contains(&word) || self.patch.types.contains(word)
         } else {
             self.types.contains(word.to_ascii_uppercase().as_str())
+                || self
+                    .patch
+                    .types
+                    .contains(word.to_ascii_uppercase().as_str())
         }
     }
     pub fn is_special(&self, word: &str) -> bool {
         if self.case_sensitive {
-            self.special.contains(&word)
+            self.special.contains(&word) || self.patch.special.contains(word)
         } else {
             self.special.contains(word.to_ascii_uppercase().as_str())
+                || self
+                    .patch
+                    .special
+                    .contains(word.to_ascii_uppercase().as_str())
         }
     }
 }
@@ -211,10 +260,12 @@ impl Syntax {
             comment,
             comment_multiline: [comment; 2],
             quotes: DEFAULT_QUOTES.into(),
+            word_start: BTreeSet::new(),
             hyperlinks: BTreeSet::new(),
             keywords: BTreeSet::new(),
             types: BTreeSet::new(),
             special: BTreeSet::new(),
+            patch: Patch::default(),
         }
     }
 }
