@@ -12,6 +12,7 @@
 //!   .with_fontsize(14.0)
 //!   .with_theme(ColorTheme::GRUVBOX)
 //!   .with_numlines(true)
+//!   .with_clickable_links(true)
 //!   .show(ui, &self.syntax, &mut self.code);
 //! ```
 //!
@@ -111,6 +112,7 @@ pub struct CodeEditor {
     numlines_shift: isize,
     numlines_only_natural: bool,
     fontsize: f32,
+    clickable_links: bool,
     rows: usize,
     vscroll: bool,
     stick_to_bottom: bool,
@@ -138,6 +140,7 @@ impl Default for CodeEditor {
             numlines_shift: 0,
             numlines_only_natural: false,
             fontsize: 10.0,
+            clickable_links: true,
             rows: 10,
             vscroll: true,
             stick_to_bottom: false,
@@ -187,6 +190,14 @@ impl CodeEditor {
         }
     }
 
+    #[cfg(feature = "egui")]
+    /// Make hyperlinks clickable
+    pub fn with_clickable_links(self, clickable_links: bool) -> Self {
+        CodeEditor {
+            clickable_links,
+            ..self
+        }
+    }
     /// Show or hide lines numbering. If true ignores text wrapping mode.
     ///
     /// **Default: true**
@@ -408,10 +419,9 @@ impl CodeEditor {
                             }
                             let output = text_edit.show(ui);
 
-                            // FIXME handle URL
-                            handle_links(&output, &links_ranges);
-                            // FIXME end
-
+                            if self.clickable_links {
+                                handle_links(&output, &links_ranges);
+                            }
                             text_edit_output = Some(output);
                         });
                 });
