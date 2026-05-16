@@ -1,3 +1,5 @@
+use crate::syntax::Patch;
+
 use super::{DEFAULT_QUOTES, Syntax};
 use std::collections::BTreeSet;
 
@@ -9,6 +11,7 @@ impl Syntax {
             comment: ";",
             comment_multiline: ["/*", "*/"],
             quotes: DEFAULT_QUOTES.into(),
+            word_start: BTreeSet::new(),
             hyperlinks: BTreeSet::from(["http"]),
             keywords: BTreeSet::from([
                 "vaddpd",
@@ -1178,6 +1181,7 @@ impl Syntax {
                 "ZMM10", "ZMM11", "ZMM12", "ZMM13", "ZMM14", "ZMM15",
                 // ZMM
             ]),
+            patch: Patch::default(),
         }
     }
 }

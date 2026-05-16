@@ -199,7 +199,7 @@ impl Completer {
             let next_char_allows = galley
                 .chars()
                 .nth(cursor.index)
-                .is_none_or(|c| !(c.is_alphanumeric() || c == '_'))
+                .is_none_or(|c| !(c.is_alphanumeric() || c == '_' || syntax.is_word_start(&c)))
                 || (range.secondary.index > range.primary.index);
 
             // Preserve Line indentation
@@ -218,9 +218,9 @@ impl Completer {
                     .text()
                     .char_range(word_start.index..cursor.index)
                     .to_string();
-                if let Some((_, tail)) =
-                    prefix.rsplit_once(|c: char| !(c.is_alphanumeric() || c == '_'))
-                {
+                if let Some((_, tail)) = prefix.rsplit_once(|c: char| {
+                    !(c.is_alphanumeric() || c == '_' || syntax.is_word_start(&c))
+                }) {
                     tail.to_string()
                 } else {
                     prefix

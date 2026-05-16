@@ -29,10 +29,10 @@ CodeEditor::default()
   .with_rows(12)
   .with_fontsize(14.0)
   .with_theme(ColorTheme::GRUVBOX)
-  .with_syntax(syntax)
   .with_numlines(true)
-  .show_with_completer(ui, &mut self.code, &mut completer);
-  // .show(ui, &mut self.code); // to use without completer
+  .with_clickable_links(true)
+  .show_with_completer(ui, &mut self.code, &syntax, &mut completer);
+  // .show(ui, &mut self.code, &syntax); // to use without completer
 ```
 
 ## Usage as lexer without egui
@@ -74,10 +74,10 @@ CodeEditor::default()
     .with_rows(12)
     .with_fontsize(14.0)
     .with_theme(self.theme)
-    .with_syntax(self.syntax.to_owned())
     .with_numlines(true)
     .vscroll(true)
-    .show(ui, &mut self.code);
+    .with_clickable_links(true)
+    .show(ui, &mut self.code, &self.syntax);
     "#;
 
     let syntax = Syntax::rust();

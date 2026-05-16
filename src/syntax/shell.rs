@@ -1,3 +1,5 @@
+use crate::syntax::Patch;
+
 use super::{DEFAULT_QUOTES, Syntax};
 use std::collections::BTreeSet;
 
@@ -8,6 +10,7 @@ impl Syntax {
             case_sensitive: true,
             comment: "#",
             quotes: DEFAULT_QUOTES.into(),
+            word_start: BTreeSet::from(['_']),
             hyperlinks: BTreeSet::from(["http"]),
             keywords: BTreeSet::from([
                 "echo", "read", "set", "unset", "readonly", "shift", "export", "if", "fi", "else",
@@ -37,6 +40,7 @@ impl Syntax {
                 "alias", "bg", "cd", "command", "false", "fc", "fg", "getopts", "jobs", "kill",
                 "newgrp", "pwd", "read", "true", "umask", "unalias", "wait",
             ]),
+            patch: Patch::default(),
         }
     }
 }

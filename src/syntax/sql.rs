@@ -1,3 +1,5 @@
+use crate::syntax::Patch;
+
 use super::{DEFAULT_QUOTES, Syntax};
 use std::collections::BTreeSet;
 
@@ -9,6 +11,7 @@ impl Syntax {
             comment: "--",
             comment_multiline: ["/*", "*/"],
             quotes: DEFAULT_QUOTES.into(),
+            word_start: BTreeSet::from(['_']),
             hyperlinks: BTreeSet::from(["http"]),
             keywords: BTreeSet::from([
                 "ADD",
@@ -134,6 +137,7 @@ impl Syntax {
                 "DATABASE",
             ]),
             special: BTreeSet::from(["PUBLIC"]),
+            patch: Patch::default(),
         }
     }
 }
