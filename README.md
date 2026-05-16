@@ -3,7 +3,7 @@
 
 ![Completer](screenshots/completer.gif)
 
-Text Editor Widget for [egui](https://github.com/emilk/egui) with numbered lines, simple syntax highlighting based on keywords sets and auto-completion feature.
+Text Editor Widget for [egui](https://github.com/emilk/egui) with numbered lines, clickable hyperlinks, simple syntax highlighting based on keywords sets and auto-completion feature.
 
 ### Auto-completion
 ![Completer](screenshots/completer_demo.gif)
