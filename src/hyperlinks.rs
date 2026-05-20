@@ -30,6 +30,12 @@ pub fn handle_links(text_edit: &TextEditOutput, links: &Links) {
                 if ctx.pointer_hover_pos().is_some_and(|p| rect.contains(p)) {
                     ctx.set_cursor_icon(egui::CursorIcon::PointingHand);
 
+                    let url = if url.starts_with("www") {
+                        format!("https://{url}")
+                    } else {
+                        url.to_string()
+                    };
+
                     if ctx.input(|r| r.pointer.primary_pressed()) {
                         ctx.open_url(egui::OpenUrl {
                             url: url.clone(),
