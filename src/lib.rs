@@ -365,7 +365,6 @@ impl CodeEditor {
     ) -> TextEditOutput {
         completer.handle_input(ui.ctx());
         let mut editor_output = self.show(ui, text, syntax);
-        completer.text_edit_id = Some(editor_output.response.id);
         completer.show(syntax, &self.theme, self.fontsize, &mut editor_output);
         editor_output
     }
