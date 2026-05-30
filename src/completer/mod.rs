@@ -152,7 +152,11 @@ impl Completer {
         fontsize: f32,
         editor_output: &mut TextEditOutput,
     ) {
-        self.text_edit_id = Some(editor_output.response.id);
+        self.text_edit_id = editor_output
+            .response
+            .has_focus()
+            .then_some(editor_output.response.id)
+            .or(self.text_edit_id);
 
         let ctx = editor_output.response.ctx.clone();
         if !editor_output.response.has_focus() {
