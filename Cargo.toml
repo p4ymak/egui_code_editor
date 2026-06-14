@@ -12,7 +12,8 @@ keywords = ["egui", "GUI", "editor", "syntax", "highlighting"]
 
 [dependencies]
 egui = { version = "0.34", optional = true }
-serde = { version = "1", optional = true}
+serde = { version = "1", optional = true }
+opener = { version = "0.8.5", optional = true }
 
 [lib]
 name = "egui_code_editor"
@@ -20,7 +21,7 @@ doctest = false
 
 [features]
 default = ["egui", "editor"]
-egui = ["dep:egui"]
+egui = ["dep:egui", "dep:opener"]
 editor = []
 serde = ["dep:serde"]
 

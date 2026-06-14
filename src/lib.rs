@@ -102,7 +102,7 @@ pub trait Editor: Hash {
 }
 
 #[cfg(feature = "editor")]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 /// CodeEditor struct which stores settings for highlighting.
 pub struct CodeEditor {
     id: String,
