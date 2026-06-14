@@ -11,7 +11,10 @@ impl Syntax {
             comment: "#",
             quotes: DEFAULT_QUOTES.into(),
             word_start: BTreeSet::from(['_']),
-            hyperlinks: BTreeSet::from(["http"]),
+            hyperlinks: BTreeSet::from([
+                "http:", "HTTP:", "https:", "HTTPS:", "www.", "WWW.", "ftp:", "FTP:", "file:",
+                "FILE:",
+            ]),
             keywords: BTreeSet::from([
                 "echo", "read", "set", "unset", "readonly", "shift", "export", "if", "fi", "else",
                 "while", "do", "done", "for", "until", "case", "esac", "break", "continue", "exit",

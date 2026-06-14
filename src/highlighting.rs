@@ -138,11 +138,15 @@ impl Token {
             (Ty::Hyperlink, _) => {
                 self.buffer.push(c);
             }
-            (Ty::Literal, _) => match c {
+            (Ty::Literal, Ty::Punctuation(c)) => match c {
                 c if c == '(' => {
                     self.ty = Ty::Function;
                     tokens.extend(self.drain(Ty::Punctuation(c)));
                     tokens.extend(self.push_drain(c, Ty::Unknown));
+                }
+                c if syntax.is_hyperlink(&format!("{}{c}", self.buffer())) => {
+                    self.ty = Ty::Hyperlink;
+                    self.buffer.push(c);
                 }
                 c if !c.is_alphanumeric()
                     && !SEPARATORS.contains(&c)
@@ -158,25 +162,27 @@ impl Token {
                 }
                 _ => {
                     self.buffer.push(c);
-                    self.ty = {
-                        if self.buffer.starts_with(syntax.comment) {
-                            Ty::Comment(false)
-                        } else if self.buffer.starts_with(syntax.comment_multiline[0]) {
-                            Ty::Comment(true)
-                        } else if syntax.is_hyperlink(&self.buffer) {
-                            Ty::Hyperlink
-                        } else if syntax.is_keyword(&self.buffer) {
-                            Ty::Keyword
-                        } else if syntax.is_type(&self.buffer) {
-                            Ty::Type
-                        } else if syntax.is_special(&self.buffer) {
-                            Ty::Special
-                        } else {
-                            Ty::Literal
-                        }
-                    };
+                    self.ty = Ty::Punctuation(c);
                 }
             },
+            (Ty::Literal, _) => {
+                self.buffer.push(c);
+                self.ty = {
+                    if self.buffer.starts_with(syntax.comment) {
+                        Ty::Comment(false)
+                    } else if self.buffer.starts_with(syntax.comment_multiline[0]) {
+                        Ty::Comment(true)
+                    } else if syntax.is_keyword(&self.buffer) {
+                        Ty::Keyword
+                    } else if syntax.is_type(&self.buffer) {
+                        Ty::Type
+                    } else if syntax.is_special(&self.buffer) {
+                        Ty::Special
+                    } else {
+                        Ty::Literal
+                    }
+                };
+            }
             (Ty::Numeric(false), Ty::Punctuation('.')) => {
                 self.buffer.push(c);
                 self.ty = Ty::Numeric(true);

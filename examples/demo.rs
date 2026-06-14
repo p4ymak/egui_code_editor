@@ -107,7 +107,7 @@ impl SyntaxDemo {
             "Python" => Syntax::python(),
             "Rust" => Syntax::rust()
                 .with_word_start(['#'])
-                .with_hyperlinks(["www", "http"]),
+                .with_hyperlinks(["www.", "http:"]),
             "Shell" => Syntax::shell(),
             "SQL" => Syntax::sql(),
             _ => Syntax::shell(),
