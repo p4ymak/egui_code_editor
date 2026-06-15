@@ -1,7 +1,7 @@
 use crate::highlighting::Links;
 use egui::{Pos2, Rect, text_edit::TextEditOutput};
 
-pub const SPACE_HOLDER: char = '␣';
+pub const SPACE_HOLDER: &str = "␣";
 
 pub fn handle_links(text_edit: &TextEditOutput, links: &Links) {
     if !text_edit.response.contains_pointer() {

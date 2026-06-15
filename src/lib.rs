@@ -464,3 +464,26 @@ pub fn format_token(theme: &ColorTheme, fontsize: f32, ty: TokenType) -> egui::t
     }
     tf
 }
+
+#[cfg(feature = "egui")]
+pub fn push_dropped_files(ui: &mut egui::Ui, text: &mut String) {
+    ui.ctx().input(|i| {
+        if !i.raw.dropped_files.is_empty() {
+            let dropped = i
+                .raw
+                .dropped_files
+                .iter()
+                .filter_map(|p| {
+                    println!("DROP: {p:?}");
+                    p.path
+                        .as_ref()
+                        .and_then(|p| p.to_str())
+                        .map(|s| format!("file://{}", s.replace(' ', SPACE_HOLDER)))
+                })
+                .collect::<Vec<String>>()
+                .join("\n");
+            text.push('\n');
+            text.push_str(&dropped);
+        }
+    });
+}
