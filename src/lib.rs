@@ -474,7 +474,6 @@ pub fn push_dropped_files(ui: &mut egui::Ui, text: &mut String) {
                 .dropped_files
                 .iter()
                 .filter_map(|p| {
-                    println!("DROP: {p:?}");
                     p.path
                         .as_ref()
                         .and_then(|p| p.to_str())
