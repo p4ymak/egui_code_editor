@@ -2,7 +2,9 @@
 
 use eframe::{self, CreationContext, egui};
 use egui::TextEdit;
-use egui_code_editor::{self, CodeEditor, ColorTheme, Completer, Syntax, highlighting::Token};
+use egui_code_editor::{
+    self, CodeEditor, ColorTheme, Completer, Syntax, highlighting::Token, push_dropped_files,
+};
 
 const THEMES: [ColorTheme; 8] = [
     ColorTheme::AYU,
@@ -105,9 +107,8 @@ impl SyntaxDemo {
             "Assembly" => Syntax::asm(),
             "Lua" => Syntax::lua(),
             "Python" => Syntax::python(),
-            "Rust" => Syntax::rust()
-                .with_word_start(['#'])
-                .with_hyperlinks(["www", "http"]),
+            "Rust" => Syntax::rust().with_word_start(['#']),
+            // .with_hyperlinks(["www.", "http:"]),
             "Shell" => Syntax::shell(),
             "SQL" => Syntax::sql(),
             _ => Syntax::shell(),
@@ -171,6 +172,8 @@ impl CodeEditorDemo {
 }
 impl eframe::App for CodeEditorDemo {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        push_dropped_files(ui, &mut self.code);
+
         egui::Panel::left("theme_picker").show_inside(ui, |ui| {
             ui.heading("Theme");
             egui::ScrollArea::both().show(ui, |ui| {

@@ -12,7 +12,10 @@ impl Syntax {
             comment_multiline: ["/*", "*/"],
             quotes: DEFAULT_QUOTES.into(),
             word_start: BTreeSet::from(['_']),
-            hyperlinks: BTreeSet::from(["http"]),
+            hyperlinks: BTreeSet::from([
+                "http:", "HTTP:", "https:", "HTTPS:", "www.", "WWW.", "ftp:", "FTP:", "file:",
+                "FILE:",
+            ]),
             keywords: BTreeSet::from([
                 "as", "break", "const", "continue", "crate", "else", "enum", "extern", "fn", "for",
                 "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut", "pub", "ref",

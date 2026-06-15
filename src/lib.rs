@@ -66,6 +66,7 @@
 //!     }
 //! }
 //! ```
+
 #[cfg(feature = "egui")]
 mod completer;
 pub mod highlighting;
@@ -75,7 +76,6 @@ mod syntax;
 #[cfg(test)]
 mod tests;
 mod themes;
-
 #[cfg(feature = "egui")]
 use egui::Stroke;
 #[cfg(feature = "egui")]
@@ -85,6 +85,8 @@ use egui::widgets::text_edit::TextEditOutput;
 pub use highlighting::Token;
 #[cfg(feature = "egui")]
 use highlighting::highlight;
+#[cfg(feature = "egui")]
+pub use hyperlinks::SPACE_HOLDER;
 #[cfg(feature = "egui")]
 use hyperlinks::handle_links;
 #[cfg(feature = "editor")]
@@ -102,7 +104,7 @@ pub trait Editor: Hash {
 }
 
 #[cfg(feature = "editor")]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 /// CodeEditor struct which stores settings for highlighting.
 pub struct CodeEditor {
     id: String,
@@ -378,6 +380,7 @@ impl CodeEditor {
         syntax: &Syntax,
     ) -> TextEditOutput {
         use egui::TextBuffer;
+
         let mut text_edit_output: Option<TextEditOutput> = None;
         let mut code_editor = |ui: &mut egui::Ui| {
             let frame = egui::Frame::new().fill(self.theme.bg());
@@ -421,6 +424,7 @@ impl CodeEditor {
                             if self.clickable_links {
                                 handle_links(&output, &links_ranges);
                             }
+
                             text_edit_output = Some(output);
                         });
                 });
@@ -459,4 +463,27 @@ pub fn format_token(theme: &ColorTheme, fontsize: f32, ty: TokenType) -> egui::t
         tf.underline = Stroke::new(fontsize * 0.1, color);
     }
     tf
+}
+
+#[cfg(feature = "egui")]
+pub fn push_dropped_files(ui: &mut egui::Ui, text: &mut String) {
+    ui.ctx().input(|i| {
+        if !i.raw.dropped_files.is_empty() {
+            let dropped = i
+                .raw
+                .dropped_files
+                .iter()
+                .filter_map(|p| {
+                    println!("DROP: {p:?}");
+                    p.path
+                        .as_ref()
+                        .and_then(|p| p.to_str())
+                        .map(|s| format!("file://{}", s.replace(' ', SPACE_HOLDER)))
+                })
+                .collect::<Vec<String>>()
+                .join("\n");
+            text.push('\n');
+            text.push_str(&dropped);
+        }
+    });
 }

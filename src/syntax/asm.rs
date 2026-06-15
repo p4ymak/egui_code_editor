@@ -12,7 +12,7 @@ impl Syntax {
             comment_multiline: ["/*", "*/"],
             quotes: DEFAULT_QUOTES.into(),
             word_start: BTreeSet::new(),
-            hyperlinks: BTreeSet::from(["http"]),
+            hyperlinks: BTreeSet::from(["http:", "https:", "www.", "ftp:", "file:"]),
             keywords: BTreeSet::from([
                 "vaddpd",
                 "divsd",
