@@ -2,7 +2,9 @@
 
 use eframe::{self, CreationContext, egui};
 use egui::TextEdit;
-use egui_code_editor::{self, CodeEditor, ColorTheme, Completer, Syntax, highlighting::Token};
+use egui_code_editor::{
+    self, CodeEditor, ColorTheme, Completer, SPACE_HOLDER, Syntax, highlighting::Token,
+};
 
 const THEMES: [ColorTheme; 8] = [
     ColorTheme::AYU,
@@ -150,6 +152,7 @@ struct CodeEditorDemo {
     example: bool,
     shift: isize,
     numlines_only_natural: bool,
+    dropped_files: String,
 }
 impl CodeEditorDemo {
     fn new(_cc: &CreationContext) -> Self {
@@ -165,11 +168,31 @@ impl CodeEditorDemo {
             example: true,
             shift: 0,
             numlines_only_natural: false,
+            dropped_files: String::new(),
         }
     }
 }
 impl eframe::App for CodeEditorDemo {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        ui.ctx().input(|i| {
+            if !i.raw.dropped_files.is_empty() {
+                let dropped = i
+                    .raw
+                    .dropped_files
+                    .iter()
+                    .filter_map(|p| {
+                        println!("DROP: {p:?}");
+                        p.path.as_ref().and_then(|p| p.to_str()).map(|s| {
+                            format!("file://{}", s.replace(' ', &SPACE_HOLDER.to_string()))
+                        })
+                    })
+                    .collect::<Vec<String>>()
+                    .join("\n");
+                self.code.push('\n');
+                self.code.push_str(&dropped);
+            }
+        });
+
         egui::Panel::left("theme_picker").show_inside(ui, |ui| {
             ui.heading("Theme");
             egui::ScrollArea::both().show(ui, |ui| {

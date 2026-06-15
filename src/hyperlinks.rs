@@ -1,6 +1,8 @@
 use crate::highlighting::Links;
 use egui::{Pos2, Rect, text_edit::TextEditOutput};
 
+pub const SPACE_HOLDER: char = '␣';
+
 pub fn handle_links(text_edit: &TextEditOutput, links: &Links) {
     if !text_edit.response.contains_pointer() {
         return;
@@ -32,7 +34,7 @@ pub fn handle_links(text_edit: &TextEditOutput, links: &Links) {
 
                     if ctx.input(|r| r.pointer.primary_pressed()) {
                         if url.to_lowercase().starts_with("file://") {
-                            let path = &url[7..];
+                            let path = &url[7..].replace(SPACE_HOLDER, " ");
                             opener::open(path)
                                 .inspect_err(|e| {
                                     if cfg!(debug_assertions) {

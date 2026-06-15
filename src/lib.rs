@@ -66,6 +66,7 @@
 //!     }
 //! }
 //! ```
+
 #[cfg(feature = "egui")]
 mod completer;
 pub mod highlighting;
@@ -75,7 +76,6 @@ mod syntax;
 #[cfg(test)]
 mod tests;
 mod themes;
-
 #[cfg(feature = "egui")]
 use egui::Stroke;
 #[cfg(feature = "egui")]
@@ -85,6 +85,8 @@ use egui::widgets::text_edit::TextEditOutput;
 pub use highlighting::Token;
 #[cfg(feature = "egui")]
 use highlighting::highlight;
+#[cfg(feature = "egui")]
+pub use hyperlinks::SPACE_HOLDER;
 #[cfg(feature = "egui")]
 use hyperlinks::handle_links;
 #[cfg(feature = "editor")]
@@ -378,6 +380,7 @@ impl CodeEditor {
         syntax: &Syntax,
     ) -> TextEditOutput {
         use egui::TextBuffer;
+
         let mut text_edit_output: Option<TextEditOutput> = None;
         let mut code_editor = |ui: &mut egui::Ui| {
             let frame = egui::Frame::new().fill(self.theme.bg());
@@ -421,6 +424,7 @@ impl CodeEditor {
                             if self.clickable_links {
                                 handle_links(&output, &links_ranges);
                             }
+
                             text_edit_output = Some(output);
                         });
                 });
