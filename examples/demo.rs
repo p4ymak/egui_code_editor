@@ -172,7 +172,7 @@ impl CodeEditorDemo {
 }
 impl eframe::App for CodeEditorDemo {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        push_dropped_files(ui, &mut self.code);
+        let was_dnd = push_dropped_files(ui, &mut self.code);
 
         egui::Panel::left("theme_picker").show_inside(ui, |ui| {
             ui.heading("Theme");
@@ -232,8 +232,11 @@ impl eframe::App for CodeEditorDemo {
                 .hint_text("Hint text if Editor is empty")
                 .vscroll(true);
 
-            editor.show_with_completer(ui, &mut self.code, &self.syntax, &mut self.completer);
-
+            let mut resp =
+                editor.show_with_completer(ui, &mut self.code, &self.syntax, &mut self.completer);
+            if was_dnd {
+                resp.response.mark_changed();
+            }
             ui.separator();
             ui.horizontal(|h| {
                 h.label("Auto-complete TextEdit::singleLine");

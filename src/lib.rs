@@ -466,7 +466,7 @@ pub fn format_token(theme: &ColorTheme, fontsize: f32, ty: TokenType) -> egui::t
 }
 
 #[cfg(feature = "egui")]
-pub fn push_dropped_files(ui: &mut egui::Ui, text: &mut String) {
+pub fn push_dropped_files(ui: &mut egui::Ui, text: &mut String) -> bool {
     ui.ctx().input(|i| {
         if !i.raw.dropped_files.is_empty() {
             let dropped = i
@@ -484,5 +484,6 @@ pub fn push_dropped_files(ui: &mut egui::Ui, text: &mut String) {
             text.push('\n');
             text.push_str(&dropped);
         }
-    });
+        !i.raw.dropped_files.is_empty()
+    })
 }
