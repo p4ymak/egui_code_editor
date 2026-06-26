@@ -22,7 +22,7 @@ pub fn handle_links(text_edit: &TextEditOutput, links: &Links) {
             let cursors = (link_start..=link_end)
                 .map(|index| {
                     galley.pos_from_cursor(egui::text::CCursor {
-                        index,
+                        index: index.into(),
                         prefer_next_row: false,
                     })
                 })

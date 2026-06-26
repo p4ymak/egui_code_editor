@@ -256,14 +256,14 @@ impl Token {
 use egui::text::LayoutJob;
 
 #[cfg(feature = "egui")]
-impl<T: Editor> egui::util::cache::ComputerMut<(&T, &str, &Syntax), (LayoutJob, Links)> for Token {
+impl<T: Editor> egui::cache::ComputerMut<(&T, &str, &Syntax), (LayoutJob, Links)> for Token {
     fn compute(&mut self, (cache, text, syntax): (&T, &str, &Syntax)) -> (LayoutJob, Links) {
         self.highlight(cache, text, syntax)
     }
 }
 
 #[cfg(feature = "egui")]
-pub type HighlightCache = egui::util::cache::FrameCache<(LayoutJob, Links), Token>;
+pub type HighlightCache = egui::cache::FrameCache<(LayoutJob, Links), Token>;
 
 #[cfg(feature = "egui")]
 pub fn highlight<T: Editor>(

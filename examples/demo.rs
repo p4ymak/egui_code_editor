@@ -174,7 +174,7 @@ impl eframe::App for CodeEditorDemo {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let was_dnd = push_dropped_files(ui, &mut self.code);
 
-        egui::Panel::left("theme_picker").show_inside(ui, |ui| {
+        egui::Panel::left("theme_picker").show(ui, |ui| {
             ui.heading("Theme");
             egui::ScrollArea::both().show(ui, |ui| {
                 for theme in THEMES.iter() {
@@ -192,7 +192,7 @@ impl eframe::App for CodeEditorDemo {
             });
         });
 
-        egui::Panel::right("syntax_picker").show_inside(ui, |ui| {
+        egui::Panel::right("syntax_picker").show(ui, |ui| {
             ui.horizontal(|h| {
                 h.heading("Syntax");
                 h.checkbox(&mut self.example, "Example");
@@ -214,7 +214,7 @@ impl eframe::App for CodeEditorDemo {
             });
         });
 
-        egui::CentralPanel::default().show_inside(ui, |ui| {
+        egui::CentralPanel::default().show(ui, |ui| {
             ui.horizontal(|h| {
                 h.label("Numbering Shift");
                 h.add(egui::DragValue::new(&mut self.shift));
