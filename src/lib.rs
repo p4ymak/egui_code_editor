@@ -364,11 +364,11 @@ impl CodeEditor {
         text: &mut dyn egui::TextBuffer,
         syntax: &Syntax,
         completer: &mut Completer,
-    ) -> TextEditOutput {
+    ) -> (TextEditOutput, Vec<Token>) {
         completer.handle_input(ui.ctx());
-        let mut editor_output = self.show(ui, text, syntax);
+        let (mut editor_output, tokens) = self.show(ui, text, syntax);
         completer.show(syntax, &self.theme, self.fontsize, &mut editor_output);
-        editor_output
+        (editor_output, tokens)
     }
 
     #[cfg(feature = "egui")]
@@ -378,10 +378,11 @@ impl CodeEditor {
         ui: &mut egui::Ui,
         text: &mut dyn egui::TextBuffer,
         syntax: &Syntax,
-    ) -> TextEditOutput {
+    ) -> (TextEditOutput, Vec<Token>) {
         use egui::TextBuffer;
 
         let mut text_edit_output: Option<TextEditOutput> = None;
+        let mut tokens = vec![];
         let mut code_editor = |ui: &mut egui::Ui| {
             let frame = egui::Frame::new().fill(self.theme.bg());
             frame.show(ui, |ui| {
@@ -399,10 +400,10 @@ impl CodeEditor {
                             let mut layouter =
                                 |ui: &egui::Ui, text_buffer: &dyn TextBuffer, wrap_width: f32| {
                                     let text_str = text_buffer.as_str();
-                                    let (mut layout_job, links) =
+                                    let (mut layout_job, links, received_tokens) =
                                         highlight(ui.ctx(), self, text_str, syntax);
                                     links_ranges = links;
-
+                                    tokens = received_tokens;
                                     if !self.numlines && self.wrap {
                                         layout_job.wrap =
                                             egui::text::TextWrapping::wrap_at_width(wrap_width);
@@ -439,7 +440,10 @@ impl CodeEditor {
             code_editor(ui);
         }
 
-        text_edit_output.expect("TextEditOutput should exist at this point")
+        (
+            text_edit_output.expect("TextEditOutput should exist at this point"),
+            tokens,
+        )
     }
 }
 

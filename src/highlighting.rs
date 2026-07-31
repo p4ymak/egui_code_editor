@@ -4,7 +4,7 @@ use super::syntax::{SEPARATORS, Syntax, TokenType};
 use std::{mem, ops::Range};
 pub type Links = Vec<Range<usize>>;
 
-#[derive(Default, Debug, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Default, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 /// Lexer and Token
 pub struct Token {
     ty: TokenType,
@@ -76,21 +76,22 @@ impl Token {
         editor: &T,
         text: &str,
         syntax: &Syntax,
-    ) -> (LayoutJob, Links) {
+    ) -> (LayoutJob, Links, Vec<Token>) {
         *self = Token::default();
         let mut job = LayoutJob::default();
         let mut links = Links::new();
         let mut i: usize = 0;
-        for token in self.tokens(syntax, text) {
+        let tokens = self.tokens(syntax, text);
+        for token in tokens.iter() {
             i += token.buffer().chars().count();
             if token.ty() == TokenType::Hyperlink {
                 links.push(i.saturating_sub(token.buffer().chars().count())..i);
             }
-            editor.append(&mut job, &token);
+            editor.append(&mut job, token);
         }
 
         // editor.append(&mut job, self);
-        (job, links)
+        (job, links, tokens)
     }
 
     /// Lexer
@@ -256,14 +257,19 @@ impl Token {
 use egui::text::LayoutJob;
 
 #[cfg(feature = "egui")]
-impl<T: Editor> egui::cache::ComputerMut<(&T, &str, &Syntax), (LayoutJob, Links)> for Token {
-    fn compute(&mut self, (cache, text, syntax): (&T, &str, &Syntax)) -> (LayoutJob, Links) {
+impl<T: Editor> egui::cache::ComputerMut<(&T, &str, &Syntax), (LayoutJob, Links, Vec<Token>)>
+    for Token
+{
+    fn compute(
+        &mut self,
+        (cache, text, syntax): (&T, &str, &Syntax),
+    ) -> (LayoutJob, Links, Vec<Token>) {
         self.highlight(cache, text, syntax)
     }
 }
 
 #[cfg(feature = "egui")]
-pub type HighlightCache = egui::cache::FrameCache<(LayoutJob, Links), Token>;
+pub type HighlightCache = egui::cache::FrameCache<(LayoutJob, Links, Vec<Token>), Token>;
 
 #[cfg(feature = "egui")]
 pub fn highlight<T: Editor>(
@@ -271,7 +277,7 @@ pub fn highlight<T: Editor>(
     cache: &T,
     text: &str,
     syntax: &Syntax,
-) -> (LayoutJob, Links) {
+) -> (LayoutJob, Links, Vec<Token>) {
     ctx.memory_mut(|mem| {
         mem.caches
             .cache::<HighlightCache>()
