@@ -78,6 +78,8 @@ mod tests;
 mod themes;
 #[cfg(feature = "egui")]
 use egui::Stroke;
+#[cfg(feature = "editor")]
+use egui::text::CCursorRange;
 #[cfg(feature = "egui")]
 use egui::text::LayoutJob;
 #[cfg(feature = "egui")]
@@ -102,6 +104,9 @@ pub use crate::completer::Completer;
 pub trait Editor: Hash {
     fn append(&self, job: &mut LayoutJob, token: &Token);
 }
+
+#[derive(Default, Debug, Clone)]
+pub struct CursorState(Option<CCursorRange>);
 
 #[cfg(feature = "editor")]
 #[derive(Clone, Debug)]
@@ -439,23 +444,38 @@ impl CodeEditor {
             egui::ScrollArea::vertical()
                 .id_salt(format!("{}_outer_scroll", self.id))
                 .stick_to_bottom(self.stick_to_bottom)
-                .auto_shrink(false)
+                .auto_shrink(true)
                 .show(ui, |ui| {
                     text_edit_output = code_editor(ui);
                     if let Some(output) = &text_edit_output
-                        && output.response.changed()
-                        && let Some(cursor_range) = output.cursor_range.map(|c| c.secondary)
+                        && output.response.has_focus()
+                    // && self.cursor.borrow().as_ref() != output.cursor_range.as_ref()
+                    // && let Some(cursor_range) = output.cursor_range.map(|c| c.primary)
                     {
-                        let cursor_rect = output
-                            .galley
-                            .pos_from_cursor(cursor_range)
-                            .translate(output.galley_pos.to_vec2());
-                        ui.scroll_to_rect(cursor_rect, None);
+                        let cursor_state = ui
+                            .data_mut(|data| data.get_persisted::<CursorState>(output.response.id))
+                            .unwrap_or_default();
+
+                        println!("OLD: {:?} != NEW {:?}", cursor_state, output.cursor_range);
+                        if cursor_state.0 != output.cursor_range
+                            && let Some(cursor_range) = output.cursor_range.map(|c| c.primary)
+                        {
+                            let cursor_rect = output
+                                .galley
+                                .pos_from_cursor(cursor_range)
+                                .translate(output.galley_pos.to_vec2());
+                            ui.scroll_to_rect(cursor_rect, None);
+                        }
                     }
                 });
         } else {
             text_edit_output = code_editor(ui);
         };
+        if let Some(output) = &text_edit_output {
+            ui.data_mut(|data| {
+                data.insert_persisted(output.response.id, CursorState(output.cursor_range))
+            });
+        }
 
         (
             text_edit_output.expect("TextEditOutput should exist at this point"),
