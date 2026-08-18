@@ -219,7 +219,7 @@ impl eframe::App for CodeEditorDemo {
                 h.add(egui::DragValue::new(&mut self.shift));
                 h.checkbox(&mut self.numlines_only_natural, "Only Natural Numbering");
             });
-
+            ui.set_max_height(ui.clip_rect().height() * 0.5);
             let mut editor = CodeEditor::default()
                 .id_source("code editor")
                 .with_rows(10)

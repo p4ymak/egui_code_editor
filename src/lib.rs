@@ -381,10 +381,11 @@ impl CodeEditor {
     ) -> (TextEditOutput, Vec<Token>) {
         use egui::TextBuffer;
 
-        let mut text_edit_output: Option<TextEditOutput> = None;
+        // let mut text_edit_output: Option<TextEditOutput> = None;
         let mut tokens = vec![];
-        let mut code_editor = |ui: &mut egui::Ui| {
+        let mut code_editor = |ui: &mut egui::Ui| -> Option<TextEditOutput> {
             let frame = egui::Frame::new().fill(self.theme.bg());
+            let mut text_edit_output: Option<TextEditOutput> = None;
             frame.show(ui, |ui| {
                 ui.horizontal_top(|h| {
                     self.theme.modify_style(h, self.fontsize);
@@ -430,15 +431,31 @@ impl CodeEditor {
                         });
                 });
             });
+            text_edit_output
         };
+
+        let mut text_edit_output: Option<TextEditOutput> = None;
         if self.vscroll {
             egui::ScrollArea::vertical()
                 .id_salt(format!("{}_outer_scroll", self.id))
                 .stick_to_bottom(self.stick_to_bottom)
-                .show(ui, code_editor);
+                .auto_shrink(false)
+                .show(ui, |ui| {
+                    text_edit_output = code_editor(ui);
+                    if let Some(output) = &text_edit_output
+                        && output.response.changed()
+                        && let Some(cursor_range) = output.cursor_range.map(|c| c.secondary)
+                    {
+                        let cursor_rect = output
+                            .galley
+                            .pos_from_cursor(cursor_range)
+                            .translate(output.galley_pos.to_vec2());
+                        ui.scroll_to_rect(cursor_rect, None);
+                    }
+                });
         } else {
-            code_editor(ui);
-        }
+            text_edit_output = code_editor(ui);
+        };
 
         (
             text_edit_output.expect("TextEditOutput should exist at this point"),
@@ -478,9 +495,8 @@ pub fn push_dropped_files(ui: &mut egui::Ui, text: &mut String) -> bool {
                 .dropped_files
                 .iter()
                 .filter_map(|p| {
-                    p.path
-                        .as_ref()
-                        .and_then(|p| p.to_str())
+                    p.path()
+                        .to_str()
                         .map(|s| format!("file://{}", s.replace(' ', SPACE_HOLDER)))
                 })
                 .collect::<Vec<String>>()
