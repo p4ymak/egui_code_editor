@@ -449,14 +449,11 @@ impl CodeEditor {
                     text_edit_output = code_editor(ui);
                     if let Some(output) = &text_edit_output
                         && output.response.has_focus()
-                    // && self.cursor.borrow().as_ref() != output.cursor_range.as_ref()
-                    // && let Some(cursor_range) = output.cursor_range.map(|c| c.primary)
                     {
                         let cursor_state = ui
                             .data_mut(|data| data.get_persisted::<CursorState>(output.response.id))
                             .unwrap_or_default();
 
-                        println!("OLD: {:?} != NEW {:?}", cursor_state, output.cursor_range);
                         if cursor_state.0 != output.cursor_range
                             && let Some(cursor_range) = output.cursor_range.map(|c| c.primary)
                         {
