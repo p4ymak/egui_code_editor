@@ -41,12 +41,15 @@ impl From<&Syntax> for Trie {
 pub struct Completer {
     prefix: String,
     cursor: CharIndex,
+    last_row: usize,
     indent: Option<String>,
     ignore_cursor: Option<CharIndex>,
     trie_syntax: Trie,
     trie_user: Option<Trie>,
     variant_id: usize,
     completions: BTreeSet<String>,
+    keyed: bool,
+    showed: bool,
     pub text_edit_id: Option<egui::Id>,
 }
 
@@ -80,6 +83,26 @@ impl Completer {
     /// Up/Down arrows for selection, Tab for completion, Esc for hiding
     pub fn handle_input(&mut self, ctx: &egui::Context) {
         ctx.memory_mut(|m| m.move_focus(egui::FocusDirection::None));
+
+        // Keyed
+        let (typed, arrows) = ctx.input(|i| {
+            let typed = i
+                .events
+                .iter()
+                .any(|e| matches!(e, egui::Event::Text(t) if !t.is_empty()))
+                || i.key_pressed(egui::Key::Backspace);
+            let arrows = i.key_pressed(egui::Key::ArrowUp)
+                || i.key_pressed(egui::Key::ArrowDown)
+                || i.key_pressed(egui::Key::ArrowLeft)
+                || i.key_pressed(egui::Key::ArrowRight);
+            (typed, arrows)
+        });
+
+        if typed {
+            self.keyed = true;
+        } else if arrows && !self.showed {
+            self.keyed = false;
+        }
 
         if let Some(indent) = self.indent.as_mut()
             && !indent.is_empty()
@@ -119,7 +142,8 @@ impl Completer {
                     m.request_focus(id);
                 });
             }
-        } else {
+        }
+        if self.showed {
             ctx.input_mut(|i| {
                 if i.consume_key(Modifiers::NONE, egui::Key::ArrowDown) {
                     self.variant_id = if self.variant_id == last {
@@ -200,6 +224,7 @@ impl Completer {
 
             if self.ignore_cursor.is_some_and(|c| c == self.cursor) {
                 editor_output.response.request_focus();
+                self.showed = false;
                 return;
             } else {
                 self.ignore_cursor = None;
@@ -236,7 +261,9 @@ impl Completer {
             } else {
                 String::new()
             };
-            if !(self.prefix.is_empty() || self.completions.is_empty()) {
+
+            if !(self.prefix.is_empty() || self.completions.is_empty()) && self.keyed {
+                self.showed = true;
                 egui::Popup::new(
                     egui::Id::new("Completer"),
                     ctx.clone(),
@@ -293,6 +320,8 @@ impl Completer {
                             }
                         });
                 });
+            } else {
+                self.showed = false;
             }
         }
     }
