@@ -78,6 +78,8 @@ mod tests;
 mod themes;
 #[cfg(feature = "egui")]
 use egui::Stroke;
+#[cfg(feature = "editor")]
+use egui::text::CCursorRange;
 #[cfg(feature = "egui")]
 use egui::text::LayoutJob;
 #[cfg(feature = "egui")]
@@ -102,6 +104,9 @@ pub use crate::completer::Completer;
 pub trait Editor: Hash {
     fn append(&self, job: &mut LayoutJob, token: &Token);
 }
+
+#[derive(Default, Debug, Clone)]
+pub struct CursorState(Option<CCursorRange>);
 
 #[cfg(feature = "editor")]
 #[derive(Clone, Debug)]
@@ -364,11 +369,11 @@ impl CodeEditor {
         text: &mut dyn egui::TextBuffer,
         syntax: &Syntax,
         completer: &mut Completer,
-    ) -> TextEditOutput {
+    ) -> (TextEditOutput, Vec<Token>) {
         completer.handle_input(ui.ctx());
-        let mut editor_output = self.show(ui, text, syntax);
+        let (mut editor_output, tokens) = self.show(ui, text, syntax);
         completer.show(syntax, &self.theme, self.fontsize, &mut editor_output);
-        editor_output
+        (editor_output, tokens)
     }
 
     #[cfg(feature = "egui")]
@@ -378,12 +383,14 @@ impl CodeEditor {
         ui: &mut egui::Ui,
         text: &mut dyn egui::TextBuffer,
         syntax: &Syntax,
-    ) -> TextEditOutput {
+    ) -> (TextEditOutput, Vec<Token>) {
         use egui::TextBuffer;
 
-        let mut text_edit_output: Option<TextEditOutput> = None;
-        let mut code_editor = |ui: &mut egui::Ui| {
+        // let mut text_edit_output: Option<TextEditOutput> = None;
+        let mut tokens = vec![];
+        let mut code_editor = |ui: &mut egui::Ui| -> Option<TextEditOutput> {
             let frame = egui::Frame::new().fill(self.theme.bg());
+            let mut text_edit_output: Option<TextEditOutput> = None;
             frame.show(ui, |ui| {
                 ui.horizontal_top(|h| {
                     self.theme.modify_style(h, self.fontsize);
@@ -399,10 +406,10 @@ impl CodeEditor {
                             let mut layouter =
                                 |ui: &egui::Ui, text_buffer: &dyn TextBuffer, wrap_width: f32| {
                                     let text_str = text_buffer.as_str();
-                                    let (mut layout_job, links) =
+                                    let (mut layout_job, links, received_tokens) =
                                         highlight(ui.ctx(), self, text_str, syntax);
                                     links_ranges = links;
-
+                                    tokens = received_tokens;
                                     if !self.numlines && self.wrap {
                                         layout_job.wrap =
                                             egui::text::TextWrapping::wrap_at_width(wrap_width);
@@ -429,17 +436,48 @@ impl CodeEditor {
                         });
                 });
             });
+            text_edit_output
         };
+
+        let mut text_edit_output: Option<TextEditOutput> = None;
         if self.vscroll {
             egui::ScrollArea::vertical()
                 .id_salt(format!("{}_outer_scroll", self.id))
                 .stick_to_bottom(self.stick_to_bottom)
-                .show(ui, code_editor);
+                .auto_shrink(true)
+                .show(ui, |ui| {
+                    text_edit_output = code_editor(ui);
+                    if let Some(output) = &text_edit_output
+                        && output.response.has_focus()
+                    {
+                        let cursor_state = ui
+                            .data_mut(|data| data.get_persisted::<CursorState>(output.response.id))
+                            .unwrap_or_default();
+
+                        if cursor_state.0 != output.cursor_range
+                            && let Some(cursor_range) = output.cursor_range.map(|c| c.primary)
+                        {
+                            let cursor_rect = output
+                                .galley
+                                .pos_from_cursor(cursor_range)
+                                .translate(output.galley_pos.to_vec2());
+                            ui.scroll_to_rect(cursor_rect, None);
+                        }
+                    }
+                });
         } else {
-            code_editor(ui);
+            text_edit_output = code_editor(ui);
+        };
+        if let Some(output) = &text_edit_output {
+            ui.data_mut(|data| {
+                data.insert_persisted(output.response.id, CursorState(output.cursor_range))
+            });
         }
 
-        text_edit_output.expect("TextEditOutput should exist at this point")
+        (
+            text_edit_output.expect("TextEditOutput should exist at this point"),
+            tokens,
+        )
     }
 }
 

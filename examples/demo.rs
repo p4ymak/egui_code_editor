@@ -2,9 +2,7 @@
 
 use eframe::{self, CreationContext, egui};
 use egui::TextEdit;
-use egui_code_editor::{
-    self, CodeEditor, ColorTheme, Completer, Syntax, highlighting::Token, push_dropped_files,
-};
+use egui_code_editor::{self, CodeEditor, ColorTheme, Completer, Syntax, push_dropped_files};
 
 const THEMES: [ColorTheme; 8] = [
     ColorTheme::AYU,
@@ -173,6 +171,7 @@ impl CodeEditorDemo {
 impl eframe::App for CodeEditorDemo {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let was_dnd = push_dropped_files(ui, &mut self.code);
+        let mut tokens = vec![];
 
         egui::Panel::left("theme_picker").show(ui, |ui| {
             ui.heading("Theme");
@@ -220,7 +219,7 @@ impl eframe::App for CodeEditorDemo {
                 h.add(egui::DragValue::new(&mut self.shift));
                 h.checkbox(&mut self.numlines_only_natural, "Only Natural Numbering");
             });
-
+            ui.set_max_height(ui.clip_rect().height() * 0.5);
             let mut editor = CodeEditor::default()
                 .id_source("code editor")
                 .with_rows(10)
@@ -232,11 +231,12 @@ impl eframe::App for CodeEditorDemo {
                 .hint_text("Hint text if Editor is empty")
                 .vscroll(true);
 
-            let mut resp =
+            let (mut resp, received_tokens) =
                 editor.show_with_completer(ui, &mut self.code, &self.syntax, &mut self.completer);
             if was_dnd {
                 resp.response.mark_changed();
             }
+            tokens = received_tokens;
             ui.separator();
             ui.horizontal(|h| {
                 h.label("Auto-complete TextEdit::singleLine");
@@ -259,10 +259,11 @@ impl eframe::App for CodeEditorDemo {
             });
             ui.separator();
 
+            ui.heading("Tokens:");
             egui::ScrollArea::both()
                 .auto_shrink([false; 2])
                 .show(ui, |ui| {
-                    for token in Token::default().tokens(&self.syntax, &self.code) {
+                    for token in tokens.iter() {
                         ui.horizontal(|h| {
                             let fmt = editor.format_token(token.ty());
                             h.label(egui::text::LayoutJob::single_section(

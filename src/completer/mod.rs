@@ -262,7 +262,7 @@ impl Completer {
                         .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden)
                         .show(ui, |ui| {
                             for (i, completion) in self.completions.iter().enumerate() {
-                                let word = format!("{}{completion}", &self.prefix);
+                                let word = format!("{}{completion}", self.prefix);
                                 let token_type = match &word {
                                     word if syntax.is_keyword(word) => TokenType::Keyword,
                                     word if syntax.is_special(word) => TokenType::Special,
