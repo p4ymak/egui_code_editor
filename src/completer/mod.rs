@@ -84,7 +84,7 @@ impl Completer {
     pub fn handle_input(&mut self, ctx: &egui::Context) {
         ctx.memory_mut(|m| m.move_focus(egui::FocusDirection::None));
 
-        // Keyed
+        // To show Copleter after text inputs, not cursor moves
         let (typed, arrows) = ctx.input(|i| {
             let typed = i
                 .events
