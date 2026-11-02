@@ -2,7 +2,9 @@
 
 use eframe::{self, CreationContext, egui};
 use egui::TextEdit;
-use egui_code_editor::{self, CodeEditor, ColorTheme, Completer, Syntax, push_dropped_files};
+use egui_code_editor::{
+    self, CodeEditor, Color32Theme, ColorTheme, Completer, Syntax, push_dropped_files,
+};
 
 const THEMES: [ColorTheme; 8] = [
     ColorTheme::AYU,
@@ -144,7 +146,7 @@ fn main() -> Result<(), eframe::Error> {
 struct CodeEditorDemo {
     code: String,
     text: String,
-    theme: ColorTheme,
+    theme: Color32Theme,
     syntax: Syntax,
     completer: Completer,
     example: bool,
@@ -157,7 +159,7 @@ impl CodeEditorDemo {
         CodeEditorDemo {
             code: rust.example.to_string(),
             text: String::default(),
-            theme: ColorTheme::GRUVBOX,
+            theme: ColorTheme::GRUVBOX.into(),
             syntax: rust.syntax(),
             completer: Completer::new_with_syntax(&rust.syntax())
                 .with_auto_indent()
@@ -178,7 +180,7 @@ impl eframe::App for CodeEditorDemo {
             egui::ScrollArea::both().show(ui, |ui| {
                 for theme in THEMES.iter() {
                     if ui
-                        .selectable_value(&mut self.theme, *theme, theme.name())
+                        .selectable_value(&mut self.theme, Color32Theme::from(*theme), theme.name())
                         .clicked()
                     {
                         if theme.is_dark() {
@@ -224,7 +226,7 @@ impl eframe::App for CodeEditorDemo {
                 .id_source("code editor")
                 .with_rows(10)
                 .with_fontsize(14.0)
-                .with_theme(self.theme)
+                .with_theme_egui(self.theme.to_owned())
                 .with_numlines(true)
                 .with_numlines_shift(self.shift)
                 .with_numlines_only_natural(self.numlines_only_natural)
@@ -243,7 +245,7 @@ impl eframe::App for CodeEditorDemo {
                 self.completer.show_on_text_widget(
                     h,
                     &Syntax::simple("#"),
-                    &ColorTheme::default(),
+                    &ColorTheme::default().into(),
                     |ui| {
                         TextEdit::singleline(&mut self.text)
                             .lock_focus(true)

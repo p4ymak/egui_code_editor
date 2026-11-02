@@ -1,6 +1,6 @@
 mod trie;
 
-use crate::{ColorTheme, Syntax, Token, TokenType, format_token};
+use crate::{Color32Theme, Syntax, Token, TokenType, format_token};
 use egui::{
     Event, Frame, Modifiers, Sense, Stroke, TextBuffer,
     text::{CCursor, CharIndex},
@@ -174,7 +174,7 @@ impl Completer {
     pub fn show(
         &mut self,
         syntax: &Syntax,
-        theme: &ColorTheme,
+        theme: &Color32Theme,
         fontsize: f32,
         editor_output: &mut TextEditOutput,
     ) {
@@ -331,7 +331,7 @@ impl Completer {
         &mut self,
         ui: &mut egui::Ui,
         syntax: &Syntax,
-        theme: &ColorTheme,
+        theme: &Color32Theme,
         mut widget: impl FnMut(&mut egui::Ui) -> TextEditOutput,
     ) -> TextEditOutput {
         self.handle_input(ui.ctx());
