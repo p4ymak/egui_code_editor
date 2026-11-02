@@ -42,6 +42,101 @@ const fn hex_u8(hex: &str) -> Option<u8> {
     }
 }
 
+#[cfg(feature = "egui")]
+#[derive(Hash, Clone, Debug, PartialEq, Eq)]
+pub struct Color32Theme {
+    pub name: String,
+    pub dark: bool,
+    pub bg: egui::Color32,
+    pub cursor: egui::Color32,
+    pub selection: egui::Color32,
+    pub comments: egui::Color32,
+    pub functions: egui::Color32,
+    pub keywords: egui::Color32,
+    pub literals: egui::Color32,
+    pub numerics: egui::Color32,
+    pub punctuation: egui::Color32,
+    pub strs: egui::Color32,
+    pub types: egui::Color32,
+    pub special: egui::Color32,
+}
+impl Default for Color32Theme {
+    fn default() -> Self {
+        ColorTheme::default().into()
+    }
+}
+
+impl From<ColorTheme> for Color32Theme {
+    fn from(value: ColorTheme) -> Self {
+        Color32Theme {
+            name: value.name.to_string(),
+            dark: value.dark,
+            bg: color_from_hex(value.bg),
+            cursor: color_from_hex(value.cursor),
+            selection: color_from_hex(value.selection),
+            comments: color_from_hex(value.comments),
+            functions: color_from_hex(value.functions),
+            keywords: color_from_hex(value.keywords),
+            literals: color_from_hex(value.literals),
+            numerics: color_from_hex(value.numerics),
+            punctuation: color_from_hex(value.punctuation),
+            strs: color_from_hex(value.strs),
+            types: color_from_hex(value.types),
+            special: color_from_hex(value.special),
+        }
+    }
+}
+impl Color32Theme {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn is_dark(&self) -> bool {
+        self.dark
+    }
+
+    pub fn bg(&self) -> Color32 {
+        self.bg
+    }
+
+    pub fn cursor(&self) -> Color32 {
+        self.cursor
+    }
+
+    pub fn selection(&self) -> Color32 {
+        self.selection
+    }
+
+    pub fn type_color(&self, ty: TokenType) -> Color32 {
+        match ty {
+            TokenType::Comment(_) => self.comments,
+            TokenType::Function => self.functions,
+            TokenType::Keyword => self.keywords,
+            TokenType::Literal => self.literals,
+            TokenType::Hyperlink => self.special,
+            TokenType::Numeric(_) => self.numerics,
+            TokenType::Punctuation(_) => self.punctuation,
+            TokenType::Special => self.special,
+            TokenType::Str(_) => self.strs,
+            TokenType::Type => self.types,
+            TokenType::Whitespace(_) | TokenType::Unknown => self.comments,
+        }
+    }
+
+    pub fn modify_style(&self, ui: &mut egui::Ui, fontsize: f32) {
+        let style = ui.style_mut();
+        let bg = self.bg();
+        style.visuals.widgets.noninteractive.bg_fill = bg;
+        style.visuals.window_fill = bg;
+        style.visuals.panel_fill = bg;
+        style.visuals.faint_bg_color = bg;
+        style.visuals.extreme_bg_color = bg;
+        style.visuals.selection.stroke.color = self.cursor();
+        style.visuals.selection.bg_fill = self.selection();
+        style.override_font_id = Some(egui::FontId::monospace(fontsize));
+        style.visuals.text_cursor.stroke.width = fontsize * 0.1;
+    }
+}
 #[derive(Hash, Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 /// Colors in hexadecimal notation without '#'.
 pub struct ColorTheme {

@@ -77,6 +77,8 @@ mod syntax;
 mod tests;
 mod themes;
 #[cfg(feature = "egui")]
+pub use crate::completer::Completer;
+#[cfg(feature = "egui")]
 use egui::Stroke;
 #[cfg(feature = "editor")]
 use egui::text::CCursorRange;
@@ -94,11 +96,10 @@ use hyperlinks::handle_links;
 #[cfg(feature = "editor")]
 use std::hash::{Hash, Hasher};
 pub use syntax::{Patch, Syntax, TokenType};
+#[cfg(feature = "egui")]
+pub use themes::Color32Theme;
 pub use themes::ColorTheme;
 pub use themes::DEFAULT_THEMES;
-
-#[cfg(feature = "egui")]
-pub use crate::completer::Completer;
 
 #[cfg(feature = "egui")]
 pub trait Editor: Hash {
@@ -113,7 +114,7 @@ pub struct CursorState(Option<CCursorRange>);
 /// CodeEditor struct which stores settings for highlighting.
 pub struct CodeEditor {
     id: String,
-    theme: ColorTheme,
+    theme: Color32Theme,
     // syntax: &'a Syntax,
     numlines: bool,
     numlines_shift: isize,
@@ -142,7 +143,7 @@ impl Default for CodeEditor {
     fn default() -> CodeEditor {
         CodeEditor {
             id: String::from("Code Editor"),
-            theme: ColorTheme::GRUVBOX,
+            theme: ColorTheme::GRUVBOX.into(),
             numlines: true,
             numlines_shift: 0,
             numlines_only_natural: false,
@@ -178,9 +179,18 @@ impl CodeEditor {
     ///
     /// **Default: Gruvbox**
     pub fn with_theme(self, theme: ColorTheme) -> Self {
-        CodeEditor { theme, ..self }
+        CodeEditor {
+            theme: theme.into(),
+            ..self
+        }
     }
 
+    /// Use custom Color Theme
+    ///
+    /// **Default: Gruvbox**
+    pub fn with_theme_egui(self, theme: Color32Theme) -> Self {
+        CodeEditor { theme, ..self }
+    }
     /// Use custom font size
     ///
     /// **Default: 10.0**
@@ -492,7 +502,7 @@ impl Editor for CodeEditor {
 }
 
 #[cfg(feature = "egui")]
-pub fn format_token(theme: &ColorTheme, fontsize: f32, ty: TokenType) -> egui::text::TextFormat {
+pub fn format_token(theme: &Color32Theme, fontsize: f32, ty: TokenType) -> egui::text::TextFormat {
     let font_id = egui::FontId::monospace(fontsize);
     let color = theme.type_color(ty);
 
