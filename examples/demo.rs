@@ -226,7 +226,7 @@ impl eframe::App for CodeEditorDemo {
                 .id_source("code editor")
                 .with_rows(10)
                 .with_fontsize(14.0)
-                .with_theme_egui(self.theme.to_owned())
+                .with_theme(&self.theme)
                 .with_numlines(true)
                 .with_numlines_shift(self.shift)
                 .with_numlines_only_natural(self.numlines_only_natural)

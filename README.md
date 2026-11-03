@@ -28,7 +28,7 @@ CodeEditor::default()
   .id_source("code editor")
   .with_rows(12)
   .with_fontsize(14.0)
-  .with_theme(ColorTheme::GRUVBOX)
+  .with_theme(&THEME32_GRUVBOX)
   .with_numlines(true)
   .with_clickable_links(true)
   .show_with_completer(ui, &mut self.code, &syntax, &mut completer);

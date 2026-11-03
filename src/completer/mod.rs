@@ -265,7 +265,7 @@ impl Completer {
             if !(self.prefix.is_empty() || self.completions.is_empty()) && self.keyed {
                 self.showed = true;
                 egui::Popup::new(
-                    egui::Id::new("Completer"),
+                    egui::Id::unique("Completer"),
                     ctx.clone(),
                     cursor_rect,
                     editor_output.response.layer_id,

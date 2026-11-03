@@ -10,7 +10,7 @@
 //!   .id_source("code editor")
 //!   .with_rows(12)
 //!   .with_fontsize(14.0)
-//!   .with_theme(ColorTheme::GRUVBOX)
+//!   .with_theme(&THEME32_GRUVBOX)
 //!   .with_numlines(true)
 //!   .with_clickable_links(true)
 //!   .show(ui, &self.syntax, &mut self.code);
@@ -54,7 +54,7 @@
 //!     .id_source("code editor")
 //!     .with_rows(12)
 //!     .with_fontsize(14.0)
-//!     .with_theme(self.theme)
+//!     .with_theme(&self.theme)
 //!     .with_numlines(true)
 //!     .vscroll(true)
 //!     .show(ui, &self.syntax, &mut self.code);
@@ -106,16 +106,17 @@ pub trait Editor: Hash {
     fn append(&self, job: &mut LayoutJob, token: &Token);
 }
 
+#[cfg(feature = "egui")]
 #[derive(Default, Debug, Clone)]
 pub struct CursorState(Option<CCursorRange>);
 
 #[cfg(feature = "editor")]
 #[derive(Clone, Debug)]
 /// CodeEditor struct which stores settings for highlighting.
-pub struct CodeEditor {
+pub struct CodeEditor<'a> {
     id: String,
-    theme: Color32Theme,
-    // syntax: &'a Syntax,
+    #[cfg(feature = "egui")]
+    theme: &'a Color32Theme,
     numlines: bool,
     numlines_shift: isize,
     numlines_only_natural: bool,
@@ -130,7 +131,7 @@ pub struct CodeEditor {
 }
 
 #[cfg(feature = "editor")]
-impl Hash for CodeEditor {
+impl<'a> Hash for CodeEditor<'a> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.theme.hash(state);
         #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
@@ -139,11 +140,11 @@ impl Hash for CodeEditor {
 }
 
 #[cfg(feature = "editor")]
-impl Default for CodeEditor {
-    fn default() -> CodeEditor {
+impl<'a> Default for CodeEditor<'a> {
+    fn default() -> CodeEditor<'a> {
         CodeEditor {
             id: String::from("Code Editor"),
-            theme: ColorTheme::GRUVBOX.into(),
+            theme: &themes::THEME32_GRUVBOX,
             numlines: true,
             numlines_shift: 0,
             numlines_only_natural: false,
@@ -160,7 +161,7 @@ impl Default for CodeEditor {
 }
 
 #[cfg(feature = "editor")]
-impl CodeEditor {
+impl<'a> CodeEditor<'a> {
     pub fn id_source(self, id_source: impl Into<String>) -> Self {
         CodeEditor {
             id: id_source.into(),
@@ -178,17 +179,7 @@ impl CodeEditor {
     /// Use custom Color Theme
     ///
     /// **Default: Gruvbox**
-    pub fn with_theme(self, theme: ColorTheme) -> Self {
-        CodeEditor {
-            theme: theme.into(),
-            ..self
-        }
-    }
-
-    /// Use custom Color Theme
-    ///
-    /// **Default: Gruvbox**
-    pub fn with_theme_egui(self, theme: Color32Theme) -> Self {
+    pub fn with_theme(self, theme: &'a Color32Theme) -> Self {
         CodeEditor { theme, ..self }
     }
     /// Use custom font size
@@ -309,7 +300,7 @@ impl CodeEditor {
 
     #[cfg(feature = "egui")]
     pub fn format_token(&self, ty: TokenType) -> egui::text::TextFormat {
-        format_token(&self.theme, self.fontsize, ty)
+        format_token(self.theme, self.fontsize, ty)
     }
 
     #[cfg(feature = "egui")]
@@ -382,7 +373,7 @@ impl CodeEditor {
     ) -> (TextEditOutput, Vec<Token>) {
         completer.handle_input(ui.ctx());
         let (mut editor_output, tokens) = self.show(ui, text, syntax);
-        completer.show(syntax, &self.theme, self.fontsize, &mut editor_output);
+        completer.show(syntax, self.theme, self.fontsize, &mut editor_output);
         (editor_output, tokens)
     }
 
@@ -493,7 +484,7 @@ impl CodeEditor {
 
 #[cfg(feature = "editor")]
 #[cfg(feature = "egui")]
-impl Editor for CodeEditor {
+impl<'a> Editor for CodeEditor<'a> {
     fn append(&self, job: &mut LayoutJob, token: &Token) {
         if !token.buffer().is_empty() {
             job.append(token.buffer(), 0.0, self.format_token(token.ty()));

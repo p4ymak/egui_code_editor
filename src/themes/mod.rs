@@ -4,9 +4,15 @@ pub mod github;
 pub mod gruvbox;
 pub mod sonokai;
 
+#[cfg(feature = "egui")]
+use std::sync::LazyLock;
+
 use super::syntax::TokenType;
 #[cfg(feature = "egui")]
 use egui::Color32;
+
+#[cfg(feature = "egui")]
+pub static THEME32_GRUVBOX: LazyLock<Color32Theme> = LazyLock::new(|| ColorTheme::GRUVBOX.into());
 
 #[cfg(feature = "egui")]
 pub const ERROR_COLOR: Color32 = Color32::from_rgb(255, 0, 255);
@@ -60,12 +66,14 @@ pub struct Color32Theme {
     pub types: egui::Color32,
     pub special: egui::Color32,
 }
+#[cfg(feature = "egui")]
 impl Default for Color32Theme {
     fn default() -> Self {
         ColorTheme::default().into()
     }
 }
 
+#[cfg(feature = "egui")]
 impl From<ColorTheme> for Color32Theme {
     fn from(value: ColorTheme) -> Self {
         Color32Theme {
@@ -86,6 +94,7 @@ impl From<ColorTheme> for Color32Theme {
         }
     }
 }
+#[cfg(feature = "egui")]
 impl Color32Theme {
     pub fn name(&self) -> &str {
         &self.name
