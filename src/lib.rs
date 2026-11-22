@@ -108,6 +108,7 @@ pub trait Editor: Hash {
 
 #[cfg(feature = "egui")]
 #[derive(Default, Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct CursorState(Option<CCursorRange>);
 
 #[cfg(feature = "editor")]

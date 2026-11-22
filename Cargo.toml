@@ -12,7 +12,7 @@ keywords = ["egui", "GUI", "editor", "syntax", "highlighting"]
 
 [dependencies]
 egui = { version = "0.37", optional = true }
-serde = { version = "1", optional = true }
+serde = { version = "1", features = ["derive"], optional = true }
 opener = { version = "0.8.5", optional = true }
 
 [lib]
@@ -23,7 +23,7 @@ doctest = false
 default = ["egui", "editor"]
 egui = ["dep:egui", "dep:opener"]
 editor = []
-serde = ["dep:serde"]
+serde = ["dep:serde", "egui/serde"]
 
 [[example]]
 name = "demo"
